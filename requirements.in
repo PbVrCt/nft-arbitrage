@@ -1,0 +1,7 @@
+# requirements.in
+requests
+pandas
+ipykernel
+boto3
+python-dotenv
+urllib3
