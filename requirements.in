@@ -5,3 +5,4 @@ ipykernel
 boto3
 python-dotenv
 urllib3
+discord

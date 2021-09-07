@@ -1,27 +1,28 @@
-# TODO: Implement twilio to a test group chat
 # TODO: Move the filters and the notifications to aws kinesis and lambda. Fill stream name below. Check the record weights in kinesis
 # TODO: Explore queries in postman, add more filters
 # TODO: Place this code in a cloudfront yaml file
 # TODO: Optimize json sizes and code speed
 # TODO: Increase amount of shards and add concurrency using proxies and asynchronous code
-# TODO: Write automated buy/sell smart contracts
+# TODO: Feed the data to aws s3 and then aws sagemaker
 import json
 import time
 import random
 import uuid
 import sys
 import os
+from collections import Counter
 
 import urllib3
 import requests
 import boto3
 from dotenv import load_dotenv
+from discord import Webhook, RequestsWebhookAdapter
 
 load_dotenv()
 SCRAPER_API_KEY = os.environ["KEY"]
 
 query = """
-query GetAxieBriefList($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {
+query GetAxieLatest($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {
   axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {
     results {
       ...AxieBrief
@@ -31,6 +32,8 @@ query GetAxieBriefList($auctionType: AuctionType, $criteria: AxieSearchCriteria,
 
 fragment AxieBrief on Axie {
   id
+  breedCount
+  image
   auction {
     currentPrice
     currentPriceUSD
@@ -42,6 +45,7 @@ fragment AxieBrief on Axie {
     id
     class
     type
+    specialGenes
   }
 }
 """
@@ -77,15 +81,16 @@ url = "https://axieinfinity.com/graphql-server-v2/graphql"
 # proxies = {
 #     "http": f"http://scraperapi:{SCRAPER_API_KEY}@proxy-server.scraperapi.com:8001"  # https to hit the proxy
 # }
-# client = boto3.client('kinesis',region_name='eu-west-1')
-partition_key = str(uuid.uuid4())
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 sucesses = 0
 failures = 0
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+# client = boto3.client('kinesis',region_name='eu-west-1')
+partition_key = str(uuid.uuid4())
+discord_webhook = "https://discord.com/api/webhooks/884600286398804009/AekOhZuGMldcimEzafjgweN2hq-i1ET2G9uwdYjb3vpxREK6Rw8yrZyon_z8UFeJnQXL"
+webhook = Webhook.from_url(discord_webhook, adapter=RequestsWebhookAdapter())
+bargains = set()
 while True:
-    for i in range(1):  # 100*
-
-        # start = time.time()
+    for i in range(1):  # 100*i
         request = requests.post(
             url,
             # proxies=proxies,
@@ -100,15 +105,51 @@ while True:
             jsn_data = request.json()["data"]["axies"]["results"]
             jsn = []
             for ax in jsn_data:
-                # print(ax)
+                # try:
                 if ax["battleInfo"]["banned"] == False:
                     id_ = ax["id"]
                     price = ax["auction"]["currentPriceUSD"]
-                    # eyes = ax["parts"][0]["class"]
-                    jsn.append(f"id={id_},price={price}")
-                if 0.0 < float(price) < 200.0:
-                    print(id_, price)
-
+                    breedCount = ax["breedCount"]
+                    pureness = Counter(
+                        [
+                            ax["parts"][0]["class"],
+                            ax["parts"][1]["class"],
+                            ax["parts"][2]["class"],
+                            ax["parts"][3]["class"],
+                            ax["parts"][4]["class"],
+                            ax["parts"][5]["class"],
+                        ]
+                    ).most_common(1)[0][1]
+                    eyes = ax["parts"][0]["id"]
+                    ears = ax["parts"][1]["id"]
+                    back = ax["parts"][2]["id"]
+                    mouth = ax["parts"][3]["id"]
+                    horn = ax["parts"][4]["id"]
+                    tail = ax["parts"][5]["id"]
+                    jsn.append(
+                        f"id={id_},price={price},breedCount={breedCount},pureness={pureness},eyes={eyes},ears={ears},back={back},mouth={mouth},horn={horn},tail={tail}"
+                    )
+                # Discord notification
+                if 30.0 < float(price) < 200.0:
+                    if id_ not in bargains:
+                        webhook.send(
+                            f"""
+                            https://marketplace.axieinfinity.com/axie/{id_}
+                            price: {price} usd
+                            breedCount: {breedCount} 
+                            pureness: {pureness} 
+                            eyes: {eyes} 
+                            ears: {ears}
+                            back: {back}
+                            mouth: {mouth}
+                            horn: {horn}
+                            tail: {tail}
+                            """,
+                            embeds=[{"image": {"url": ax["image"]}}],
+                        )
+                    bargains.add(id_)
+                # except:
+                #     print("Erros parsing axie")
             jsn = json.dumps(jsn, indent=2)
             sucesses += 1
         except:
