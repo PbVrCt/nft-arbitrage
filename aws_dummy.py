@@ -15,8 +15,9 @@ from collections import Counter
 import urllib3
 import requests
 import boto3
+import discord
 from dotenv import load_dotenv
-from discord import Webhook, RequestsWebhookAdapter
+
 
 load_dotenv()
 SCRAPER_API_KEY = os.environ["KEY"]
@@ -65,10 +66,10 @@ def variables(fromm):
             "classes": None,
             "stages": None,
             "numMystic": None,
-            "pureness": None,
+            "pureness": 6,
             "title": None,
             "breedable": None,
-            "breedCount": None,
+            "breedCount": 0,
             "hp": [],
             "skill": [],
             "speed": [],
@@ -86,8 +87,10 @@ sucesses = 0
 failures = 0
 # client = boto3.client('kinesis',region_name='eu-west-1')
 partition_key = str(uuid.uuid4())
-discord_webhook = "https://discord.com/api/webhooks/884600286398804009/AekOhZuGMldcimEzafjgweN2hq-i1ET2G9uwdYjb3vpxREK6Rw8yrZyon_z8UFeJnQXL"
-webhook = Webhook.from_url(discord_webhook, adapter=RequestsWebhookAdapter())
+DISCORD_WEBHOOK_URL = os.environ["DISCORD_WEBHOOK"]
+webhook = discord.Webhook.from_url(
+    discord_webhook, adapter=discord.RequestsWebhookAdapter()
+)
 bargains = set()
 while True:
     for i in range(1):  # 100*i
@@ -105,52 +108,53 @@ while True:
             jsn_data = request.json()["data"]["axies"]["results"]
             jsn = []
             for ax in jsn_data:
-                # try:
-                if ax["battleInfo"]["banned"] == False:
-                    id_ = ax["id"]
-                    price = ax["auction"]["currentPriceUSD"]
-                    breedCount = ax["breedCount"]
-                    pureness = Counter(
-                        [
-                            ax["parts"][0]["class"],
-                            ax["parts"][1]["class"],
-                            ax["parts"][2]["class"],
-                            ax["parts"][3]["class"],
-                            ax["parts"][4]["class"],
-                            ax["parts"][5]["class"],
-                        ]
-                    ).most_common(1)[0][1]
-                    eyes = ax["parts"][0]["id"]
-                    ears = ax["parts"][1]["id"]
-                    back = ax["parts"][2]["id"]
-                    mouth = ax["parts"][3]["id"]
-                    horn = ax["parts"][4]["id"]
-                    tail = ax["parts"][5]["id"]
-                    jsn.append(
-                        f"id={id_},price={price},breedCount={breedCount},pureness={pureness},eyes={eyes},ears={ears},back={back},mouth={mouth},horn={horn},tail={tail}"
-                    )
-                # Discord notification
-                if 30.0 < float(price) < 200.0:
-                    if id_ not in bargains:
-                        webhook.send(
-                            f"""
-                            https://marketplace.axieinfinity.com/axie/{id_}
-                            price: {price} usd
-                            breedCount: {breedCount} 
-                            pureness: {pureness} 
-                            eyes: {eyes} 
-                            ears: {ears}
-                            back: {back}
-                            mouth: {mouth}
-                            horn: {horn}
-                            tail: {tail}
-                            """,
-                            embeds=[{"image": {"url": ax["image"]}}],
+                try:
+                    if ax["battleInfo"]["banned"] == False:
+                        id_ = ax["id"]
+                        price = ax["auction"]["currentPriceUSD"]
+                        breedCount = ax["breedCount"]
+                        pureness = Counter(
+                            [
+                                ax["parts"][0]["class"],
+                                ax["parts"][1]["class"],
+                                ax["parts"][2]["class"],
+                                ax["parts"][3]["class"],
+                                ax["parts"][4]["class"],
+                                ax["parts"][5]["class"],
+                            ]
+                        ).most_common(1)[0][1]
+                        eyes = ax["parts"][0]["id"]
+                        ears = ax["parts"][1]["id"]
+                        back = ax["parts"][2]["id"]
+                        mouth = ax["parts"][3]["id"]
+                        horn = ax["parts"][4]["id"]
+                        tail = ax["parts"][5]["id"]
+                        jsn.append(
+                            f"id={id_},price={price},breedCount={breedCount},pureness={pureness},eyes={eyes},ears={ears},back={back},mouth={mouth},horn={horn},tail={tail}"
                         )
-                    bargains.add(id_)
-                # except:
-                #     print("Erros parsing axie")
-            jsn = json.dumps(jsn, indent=2)
+                    # Discord notification
+                    if (
+                        30.0
+                        < float(price)
+                        < 260.0
+                        # and (breedCount < 3)
+                        # and (pureness > 3)
+                    ):
+                        if id_ not in bargains:
+                            webhook.send(
+                                f"""
+                                https://marketplace.axieinfinity.com/axie/{id_}
+                                price: {price} usd
+                                breedCount: {breedCount} 
+                                pureness: {pureness} 
+                                """,
+                                embed=discord.Embed().set_image(url=ax["image"]),
+                            )
+                        bargains.add(id_)
+                except:
+                    print("Error parsing axie")
+            # jsn = json.dumps(jsn, indent=2)
+            # print(jsn)
             sucesses += 1
         except:
             failures += 1
@@ -162,8 +166,7 @@ while True:
         # end = time.time()
         # print("Time elapsed: ", end - start, "s")
         # print("Estimated size: " + str(sys.getsizeof(jsn) / 1024) + "KB")
-        # print("Status code: ", request.status_code)
-        time.sleep(random.lognormvariate(1, 0.5))
+        time.sleep(random.lognormvariate(0.7, 0.5))
     print(
         "Sucessful requests: ", sucesses, "\nFailed requests: ", failures, "\n*******"
     )

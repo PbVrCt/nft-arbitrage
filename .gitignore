@@ -1,3 +1,4 @@
 .history/
 venv/
 .env
+upload_s3.py
