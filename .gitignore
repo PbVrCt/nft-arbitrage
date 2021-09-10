@@ -2,3 +2,10 @@
 venv/
 .env
 upload_s3.py
+
+scrape_leaderboard/
+leaderboard.csv
+
+filter_realtime.ipynb
+filter_realtime.py
+scrape_dataset.py

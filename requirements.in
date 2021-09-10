@@ -6,3 +6,9 @@ boto3
 python-dotenv
 urllib3
 discord
+aiohttp
+
+selenium
+cssselect
+lxml
+matplotlib
