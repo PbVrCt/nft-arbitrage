@@ -1,0 +1,5 @@
+# TODO: Feed the data to aws s3 and then aws sagemaker
+
+# TODO: Move the filters and the notifications to aws kinesis and lambda. Fill stream name below. Check the record weights in kinesis
+# TODO: Place the code in a cloudfront yaml file
+# TODO: Optimize

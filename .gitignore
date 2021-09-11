@@ -1,11 +1,6 @@
 .history/
 venv/
 .env
-upload_s3.py
-
-scrape_leaderboard/
-leaderboard.csv
-
-filter_realtime.ipynb
-filter_realtime.py
-scrape_dataset.py
+leaderboard/
+axie_dataset_30_000.json
+axie_dataset_300_000.json

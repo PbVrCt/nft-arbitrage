@@ -1,0 +1,207 @@
+import json
+import time
+import uuid
+import os
+import asyncio
+from collections import Counter
+
+import aiohttp
+import urllib3
+import pandas as pd
+import boto3
+import discord
+from dotenv import load_dotenv
+
+load_dotenv()
+
+query = """
+query GetAxieLatest($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {
+  axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {
+    results {
+      ...AxieBrief
+    }
+  }
+}
+fragment AxieBrief on Axie {
+  id
+  class
+  breedCount
+  image
+  auction {
+    currentPrice
+    currentPriceUSD
+  }
+  battleInfo {
+    banned
+  }
+  parts {
+    name
+    class
+    type
+    specialGenes
+  }
+}
+"""
+
+
+def variables(fromm):
+    return {
+        "from": fromm,
+        "size": 100,
+        "sort": "PriceAsc",
+        "auctionType": "Sale",
+        "owner": None,
+        "criteria": {
+            "region": None,
+            "parts": None,
+            "bodyShapes": None,
+            "classes": None,
+            "stages": None,
+            "numMystic": None,
+            "pureness": None,
+            "title": None,
+            "breedable": None,
+            "breedCount": 0,
+            "hp": [],
+            "skill": [],
+            "speed": [],
+            "morale": [],
+        },
+    }
+
+
+URL = "https://axieinfinity.com/graphql-server-v2/graphql"
+PRXY = os.environ["URL"]
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+# client = boto3.client('kinesis',region_name='eu-west-1')
+# partition_key = str(uuid.uuid4())
+DISCORD_WEBHOOK_URL = os.environ["DISCORD_WEBHOOK_URL"]
+WEBHOOK = discord.Webhook.from_url(
+    DISCORD_WEBHOOK_URL, adapter=discord.RequestsWebhookAdapter()
+)
+
+
+def get_posts(session, start, end, step=100):
+    posts = []
+    for i in range(int(start), int(end), int(step)):
+        posts.append(
+            asyncio.create_task(
+                session.post(
+                    URL,
+                    json={"query": query, "variables": variables(fromm=i)},
+                    proxy=PRXY,
+                    ssl=False,
+                )
+            )
+        )
+    return posts
+
+
+async def run_posts(start, end, step=100, timeout=10):
+    results = []
+    timeouts = 0
+    bad_format = 0
+    timeout = aiohttp.ClientTimeout(total=timeout)
+    async with aiohttp.ClientSession(timeout=timeout, trust_env=True) as session:
+        posts = get_posts(session, start, end, step)
+        responses = await asyncio.gather(*posts, return_exceptions=True)
+        for response in responses:
+            if isinstance(response, asyncio.TimeoutError):
+                timeouts += 1
+            else:
+                if response.status == 200:
+                    try:
+                        data = await response.json()
+                        results.append(data["data"]["axies"]["results"])
+                    except:
+                        bad_format += 1
+                else:
+                    print(f"Unexpected status code returned: {response.status}")
+    print("Failed to append requests: ", bad_format, "/", len(responses))
+    print("Timed out requests: ", timeouts, "/", len(responses))
+    return results
+
+
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+TIMEOUT = 20
+STEP = 500
+FIRST_AXIE = 3000
+bargains = set()  # Don´t retrieve the same nft twice
+# Filter by build
+leaderboard = pd.read_csv("./leaderboard/leaderboard.csv")
+leaderboard = (
+    leaderboard[["Back", "Mouth", "Horn", "Tail"]].drop_duplicates().values.tolist()
+)
+BEST_BUILDS = set(tuple(x) for x in leaderboard)
+#
+try:
+    while True:
+        for i in range(4):
+            init = FIRST_AXIE + i * STEP
+            f = FIRST_AXIE + STEP + i * STEP
+            n_found = 0
+            jsn_data = asyncio.run(run_posts(init, f, 100, timeout=TIMEOUT))
+            if jsn_data:
+                jsn_data = [axie for sublist in jsn_data for axie in sublist]
+                for ax in jsn_data:
+                    not_parsed_axies = 0
+                    if ax["battleInfo"]["banned"] == False:
+                        try:
+                            id_ = ax["id"]
+                            class_ = ax["class"]
+                            price = ax["auction"]["currentPriceUSD"]
+                            breedCount = ax["breedCount"]
+                            pureness = Counter(
+                                [
+                                    ax["parts"][0]["class"],
+                                    ax["parts"][1]["class"],
+                                    ax["parts"][2]["class"],
+                                    ax["parts"][3]["class"],
+                                    ax["parts"][4]["class"],
+                                    ax["parts"][5]["class"],
+                                ]
+                            ).most_common(1)[0][1]
+                            eyes = ax["parts"][0]["name"]
+                            ears = ax["parts"][1]["name"]
+                            back = ax["parts"][2]["name"]
+                            mouth = ax["parts"][3]["name"]
+                            horn = ax["parts"][4]["name"]
+                            tail = ax["parts"][5]["name"]
+                        except:
+                            not_parsed_axies += 1
+                        else:
+                            # aws kinesis
+                            # else:
+                            #     client.put_record(
+                            #         StreamName="stream_name", Data=jsn, PartitionKey=partition_key
+                            #     )
+                            # Discord notification
+                            if (
+                                # (30.0 < float(price) < 300.0)
+                                (tuple([back, mouth, horn, tail]) in BEST_BUILDS)
+                                # and (breedCount < 3)
+                                # and (pureness > 3)
+                                and (id_ not in bargains)
+                            ):
+                                WEBHOOK.send(
+                                    f"""
+                                        https://marketplace.axieinfinity.com/axie/{id_}
+                                        price: {price} usd
+                                        breedCount: {breedCount} 
+                                        pureness: {pureness} 
+                                        """,
+                                    embed=discord.Embed().set_image(url=ax["image"]),
+                                )
+                                n_found += 1
+                                bargains.add(id_)
+                print(
+                    f"Axies failed to  parse: ",
+                    not_parsed_axies,
+                    "/",
+                    len(jsn_data),
+                    f"\nSorted by price: {init}-{f}",
+                    f"\nAmount of bargains: {n_found}",
+                    "\n*******",
+                )
+except KeyboardInterrupt:
+    print("Exit")
