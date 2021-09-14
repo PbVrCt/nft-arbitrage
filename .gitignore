@@ -1,6 +1,7 @@
 .history/
 venv/
 .env
-leaderboard/
-axie_dataset_30_000.json
-axie_dataset_300_000.json
+0_get_data_leaderboard/
+2_model_training/*.pkl
+data/*
+Keras_tuner_metadata/*/**

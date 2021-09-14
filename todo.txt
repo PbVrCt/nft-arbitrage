@@ -1,5 +1,8 @@
-# TODO: Feed the data to aws s3 and then aws sagemaker
+# Redo feature engineering for real time inference
+# Check how it performs in jupyter first
+# Train models on the big dataset and have them not break
+# Automate data collection calling the api with different queries
 
-# TODO: Move the filters and the notifications to aws kinesis and lambda. Fill stream name below. Check the record weights in kinesis
+# TODO: Move to s3 and sagemaker
+# TODO: Move the inference to kinesis and lambda. Check the record weights in kinesis
 # TODO: Place the code in a cloudfront yaml file
-# TODO: Optimize

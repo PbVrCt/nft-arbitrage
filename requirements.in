@@ -7,6 +7,9 @@ python-dotenv
 urllib3
 discord
 aiohttp
+scikit-learn
+keras_tuner
+tensorflow
 
 selenium
 cssselect

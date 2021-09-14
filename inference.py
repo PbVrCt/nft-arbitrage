@@ -1,4 +1,5 @@
 import json
+import pickle
 import time
 import uuid
 import os
@@ -115,9 +116,15 @@ async def run_posts(start, end, step=100, timeout=10):
                         results.append(data["data"]["axies"]["results"])
                     except:
                         bad_format += 1
+                    else:  # (try+assert are not working for me inside async)
+                        if len(data["data"]["axies"]["results"]) == 0:
+                            bad_format += 1
+
                 else:
                     print(f"Unexpected status code returned: {response.status}")
-    print("Failed to append requests: ", bad_format, "/", len(responses))
+    print(
+        "Request responses in wrong format or empty: ", bad_format, "/", len(responses)
+    )
     print("Timed out requests: ", timeouts, "/", len(responses))
     return results
 
@@ -132,6 +139,9 @@ leaderboard = pd.read_csv("./leaderboard/leaderboard.csv")
 leaderboard = (
     leaderboard[["Back", "Mouth", "Horn", "Tail"]].drop_duplicates().values.tolist()
 )
+# Model 
+with open('_tree.pkl', 'rb') as f: # RF, KNN, , tree, polynomial, SVM
+    model = pickle.load(f)
 BEST_BUILDS = set(tuple(x) for x in leaderboard)
 #
 try:
@@ -143,8 +153,8 @@ try:
             jsn_data = asyncio.run(run_posts(init, f, 100, timeout=TIMEOUT))
             if jsn_data:
                 jsn_data = [axie for sublist in jsn_data for axie in sublist]
+                not_parsed_axies = 0
                 for ax in jsn_data:
-                    not_parsed_axies = 0
                     if ax["battleInfo"]["banned"] == False:
                         try:
                             id_ = ax["id"]
