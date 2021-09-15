@@ -9,9 +9,6 @@ from collections import Counter
 
 import urllib3
 import requests
-from dotenv import load_dotenv
-
-load_dotenv()
 
 query = """
 query GetAxieLatest($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {

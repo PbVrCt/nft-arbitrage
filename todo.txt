@@ -1,8 +1,8 @@
-# Redo feature engineering for real time inference
-# Check how it performs in jupyter first
-# Train models on the big dataset and have them not break
+
+# Train the models successfully
 # Automate data collection calling the api with different queries
 
 # TODO: Move to s3 and sagemaker
 # TODO: Move the inference to kinesis and lambda. Check the record weights in kinesis
+# TODO: Make the process of feature engineering equal for model training and inference to prevent problems in case of data format "drift" 
 # TODO: Place the code in a cloudfront yaml file

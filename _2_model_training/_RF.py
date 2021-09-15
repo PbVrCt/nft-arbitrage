@@ -13,14 +13,17 @@ labels = df.iloc[:95000].loc[:, "Price"].to_numpy()
 test_features = df.loc[95000:].loc[:, df.columns != "Price"].to_numpy()
 test_labels = df.loc[95000:].loc[:, "Price"].to_numpy()
 
+print(features[:5])
+print(labels[:5])
+
 # Define the model: Random Forest
 class RF(kt.HyperModel):
     def build(self, hp):
         model_type = hp.Choice("model_type", ["random_forest", "xgboost"])
-        n_estimators = hp.Int("n_estimators", 10, 250, step=40)
-        max_depth = hp.Int("max_depth", 3, 15)
+        n_estimators = hp.Int("n_estimators", 10, 170, step=40)
+        max_depth = hp.Int("max_depth", 3, 20)
         max_samples = hp.Float("max_samples", min_value=0.4, max_value=0.99)
-        max_features = hp.Int("max_features", 2, 4)  # rule of thumb: root(n_features)
+        max_features = hp.Int("max_features", 3, 6)  # rule of thumb: root(n_features)
         if model_type == "random_forest":
             with hp.conditional_scope("model_type", "random_forest"):
                 model = ensemble.RandomForestRegressor(
@@ -50,7 +53,7 @@ tuner = kt.tuners.SklearnTuner(
     oracle=kt.oracles.BayesianOptimizationOracle(
         # Keras docs: "Note that for this Tuner, the objective for the Oracle should always be set to Objective('score', direction='max')"
         objective=kt.Objective("score", "max"),
-        max_trials=60,
+        max_trials=1,
     ),
     hypermodel=hypermodel,
     scoring=metrics.make_scorer(
@@ -58,7 +61,7 @@ tuner = kt.tuners.SklearnTuner(
     ),  # mean_absolute_error, mean_squared_error, max_error
     cv=model_selection.RepeatedKFold(n_splits=10, n_repeats=3, random_state=1),
     project_name="Keras_tuner_metadata/RF",
-    overwrite=True,
+    overwrite=False,
 )
 tuner.search(features, labels)
 # Show the results
@@ -77,5 +80,5 @@ print(
 )
 
 # Save the model
-with open("model_training/_RF.pkl", "wb") as f:
+with open("_2_model_training/_RF.pkl", "wb") as f:
     pickle.dump(best_model, f)

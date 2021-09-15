@@ -10,6 +10,7 @@ aiohttp
 scikit-learn
 keras_tuner
 tensorflow
+tqdm
 
 selenium
 cssselect

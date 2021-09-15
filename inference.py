@@ -13,6 +13,8 @@ import boto3
 import discord
 from dotenv import load_dotenv
 
+from _1_preprocessing.feature_engineering import score_df
+
 load_dotenv()
 
 query = """
@@ -129,20 +131,46 @@ async def run_posts(start, end, step=100, timeout=10):
     return results
 
 
+def compare_two_prices(row, id_):
+    global n_found
+    global bargains
+    if (
+        (row["Price"] + 100 < row["Prediction"])
+        and (row["Price"] > 50)
+        and (id_ not in bargains)
+    ):
+        bargains.add(id_)
+        n_found += 1
+        WEBHOOK.send(
+            f"""
+                https://marketplace.axieinfinity.com/axie/{id_}
+                price: {row['Price']} usd
+                price prediction: {row['Prediction']}
+                """,
+            embed=discord.Embed().set_image(url=row["Image"]),
+        )
+
+
+def compare_prices(price_comparaison):
+    price_comparaison.apply(lambda df: compare_two_prices(df, df.name), axis=1)
+
+
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 TIMEOUT = 20
 STEP = 500
 FIRST_AXIE = 3000
 bargains = set()  # Don´t retrieve the same nft twice
-# Filter by build
-leaderboard = pd.read_csv("./leaderboard/leaderboard.csv")
-leaderboard = (
-    leaderboard[["Back", "Mouth", "Horn", "Tail"]].drop_duplicates().values.tolist()
-)
-# Model 
-with open('_tree.pkl', 'rb') as f: # RF, KNN, , tree, polynomial, SVM
+# Model
+with open("./_2_model_training/_RF.pkl", "rb") as f:  # RF, KNN, tree, polynomial
     model = pickle.load(f)
-BEST_BUILDS = set(tuple(x) for x in leaderboard)
+# One hot encoder for the axie class
+with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
+    oh_enc = pickle.load(f)
+# Card and combo scores
+with open("./_1_preprocessing/scores_lookup.txt") as f:
+    for i in f.readlines():
+        scores_lookup = i
+scores_lookup = eval(scores_lookup)
 #
 try:
     while True:
@@ -154,12 +182,16 @@ try:
             if jsn_data:
                 jsn_data = [axie for sublist in jsn_data for axie in sublist]
                 not_parsed_axies = 0
+                info_batch = pd.DataFrame()
+                price_batch = pd.DataFrame()
+                image_batch = pd.DataFrame()
                 for ax in jsn_data:
                     if ax["battleInfo"]["banned"] == False:
                         try:
                             id_ = ax["id"]
                             class_ = ax["class"]
-                            price = ax["auction"]["currentPriceUSD"]
+                            image = ax["image"]
+                            price = float(ax["auction"]["currentPriceUSD"])
                             breedCount = ax["breedCount"]
                             pureness = Counter(
                                 [
@@ -177,33 +209,37 @@ try:
                             mouth = ax["parts"][3]["name"]
                             horn = ax["parts"][4]["name"]
                             tail = ax["parts"][5]["name"]
+                            axie_info = pd.DataFrame(
+                                {
+                                    "BreedCount": breedCount,
+                                    "Pureness": pureness,
+                                    "Class": class_,
+                                    "Eyes": eyes,
+                                    "Ears": ears,
+                                    "Back": back,
+                                    "Mouth": mouth,
+                                    "Horn": horn,
+                                    "Tail": tail,
+                                },
+                                index=[id_],
+                            )
+                            info_batch = info_batch.append(axie_info)
+                            price_batch = price_batch.append(
+                                pd.DataFrame({"Price": price}, index=[id_])
+                            )
+                            image_batch = image_batch.append(
+                                pd.DataFrame({"Image": image}, index=[id_])
+                            )
                         except:
                             not_parsed_axies += 1
-                        else:
-                            # aws kinesis
-                            # else:
-                            #     client.put_record(
-                            #         StreamName="stream_name", Data=jsn, PartitionKey=partition_key
-                            #     )
-                            # Discord notification
-                            if (
-                                # (30.0 < float(price) < 300.0)
-                                (tuple([back, mouth, horn, tail]) in BEST_BUILDS)
-                                # and (breedCount < 3)
-                                # and (pureness > 3)
-                                and (id_ not in bargains)
-                            ):
-                                WEBHOOK.send(
-                                    f"""
-                                        https://marketplace.axieinfinity.com/axie/{id_}
-                                        price: {price} usd
-                                        breedCount: {breedCount} 
-                                        pureness: {pureness} 
-                                        """,
-                                    embed=discord.Embed().set_image(url=ax["image"]),
-                                )
-                                n_found += 1
-                                bargains.add(id_)
+                axie_values = score_df(info_batch, scores_lookup, class_encoder=oh_enc)
+                price_predictions = axie_values.apply(
+                    lambda row: model.predict(row.values.reshape(1, -1))[0], axis=1
+                )
+                price_comparaisons = pd.concat(
+                    [axie_values, price_batch, price_predictions, image_batch], axis=1
+                ).rename({0: "Prediction"}, axis=1)
+                compare_prices(price_comparaisons)
                 print(
                     f"Axies failed to  parse: ",
                     not_parsed_axies,
