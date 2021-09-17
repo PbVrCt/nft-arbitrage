@@ -8,10 +8,10 @@ from sklearn import model_selection
 from sklearn import pipeline
 
 df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
-features = df.iloc[:95000].loc[:, df.columns != "Price"].to_numpy()
-labels = df.iloc[:95000].loc[:, "Price"].to_numpy()
-test_features = df.loc[95000:].loc[:, df.columns != "Price"].to_numpy()
-test_labels = df.loc[95000:].loc[:, "Price"].to_numpy()
+features = df.iloc[:-3000].loc[:, df.columns != "Price"].to_numpy()
+labels = df.iloc[:-3000].loc[:, "Price"].to_numpy()
+test_features = df.iloc[-3000:].loc[:, df.columns != "Price"].to_numpy()
+test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 
 # Define the model and hyperpameters
 model = pipeline.Pipeline(
@@ -55,5 +55,5 @@ print(
     metrics.mean_squared_error(test_labels, predictions),
 )
 # Save the model
-with open("model_training/_polynomial.pkl", "wb") as f:
+with open("_2_model_training/_polynomial.pkl", "wb") as f:
     pickle.dump(best_model, f)

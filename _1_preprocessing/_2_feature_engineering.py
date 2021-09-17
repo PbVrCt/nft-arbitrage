@@ -129,14 +129,10 @@ def score_df(df, scores_lookup, class_encoder, disable_progress_bar=True):
 if __name__ == "__main__":
     # Load the data
     leaderboard = pd.read_csv("./_0_get_data_leaderboard/leaderboard.csv")
-    leaderboard.drop(["User_Addr", "Winrate"], axis=1, inplace=True)
-    df = pd.read_json(f"./data/full.json")
-    print("Rows of data: ", df.shape[0])
-    df = df.drop_duplicates(subset=["Id", "Price"]).drop(columns=["Id"])
-    print("Rows of data sans duplicates: ", df.shape[0])
+    df = pd.read_csv(f"./data/full_cleansed.csv", index_col=[0])
 
     # Fit the one hot encoder for the class column
-    fit_one_hot_encoder(df)
+    # fit_one_hot_encoder(df)
     with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
         oh_enc = pickle.load(f)
 
@@ -147,12 +143,13 @@ if __name__ == "__main__":
 
     # Check if the feature engineering is done fast enough for real time inference
     # start = time.time()
-    # row = score_df(df.iloc[-1:], scores_lookup, oh_enc)
+    # row = score_df(df.iloc[-100:], scores_lookup, oh_enc)
     # end = time.time()
-    # print("Time elapsed in feature engineering one nft: ", end - start, "s")
+    # print("Time elapsed in feature engineering 100 nft: ", end - start, "s")
     # print(row)
 
     # Do the feature engineering on the data and save it
     df = score_df(df, scores_lookup, oh_enc, disable_progress_bar=False)
-    print(df.head(-5))
+    print(df.head())
     df.to_csv(f"./data/full_engineered.csv")
+    print("\nSaved")

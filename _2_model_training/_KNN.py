@@ -7,10 +7,10 @@ from sklearn import model_selection
 from sklearn import pipeline
 
 df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
-features = df.iloc[:95000].loc[:, df.columns != "Price"].to_numpy()
-labels = df.iloc[:95000].loc[:, "Price"].to_numpy()
-test_features = df.loc[95000:].loc[:, df.columns != "Price"].to_numpy()
-test_labels = df.loc[95000:].loc[:, "Price"].to_numpy()
+features = df.iloc[:-3000].loc[:, df.columns != "Price"].to_numpy()
+labels = df.iloc[:-3000].loc[:, "Price"].to_numpy()
+test_features = df.iloc[-3000:].loc[:, df.columns != "Price"].to_numpy()
+test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 
 # Define the model and hyperpameters
 model = neighbors.KNeighborsRegressor()
@@ -18,9 +18,9 @@ n_neighbors = range(5, 25, 2)
 weights = ["uniform", "distance"]
 metric = ["euclidean", "manhattan", "minkowski"]
 p = [1, 2]
-# Define the grid search
+# Define the search space
 grid = dict(n_neighbors=n_neighbors, weights=weights, metric=metric, p=p)
-cv = model_selection.RepeatedKFold(n_splits=5, n_repeats=3, random_state=1)
+cv = model_selection.RepeatedKFold(n_splits=7, n_repeats=3, random_state=1)
 grid_search = model_selection.GridSearchCV(
     estimator=model,
     param_grid=grid,
@@ -51,5 +51,5 @@ print(
     metrics.mean_squared_error(test_labels, predictions),
 )
 # Save the model
-with open("model_training/_KNN.pkl", "wb") as f:
+with open("_2_model_training/_KNN.pkl", "wb") as f:
     pickle.dump(best_model, f)

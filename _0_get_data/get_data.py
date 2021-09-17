@@ -4,95 +4,66 @@ import random
 import os
 import datetime
 import pathlib
-
 from collections import Counter
 
 import urllib3
 import requests
 
-query = """
-query GetAxieLatest($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {
-  axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {
-    results {
-      ...AxieBrief
-    }
-  }
-}
-fragment AxieBrief on Axie {
-  id
-  class
-  breedCount
-  image
-  auction {
-    currentPrice
-    currentPriceUSD
-  }
-  battleInfo {
-    banned
-  }
-  parts {
-    name
-    class
-    type
-    specialGenes
-  }
-}
-"""
-
-
-def variables(fromm):
-    return {
-        "from": fromm,
-        "size": 100,
-        "sort": "PriceAsc",
-        "auctionType": "Sale",
-        "owner": None,
-        "criteria": {
-            "region": None,
-            "parts": None,
-            "bodyShapes": None,
-            "classes": None,
-            "stages": None,
-            "numMystic": None,
-            "pureness": None,
-            "title": None,
-            "breedable": None,
-            "breedCount": 6,
-            "hp": [],
-            "skill": [],
-            "speed": [],
-            "morale": [],
-        },
-    }
-
-
-# Pureness, BreedCount, Classes, Stats, Parts. Use script
-# The api is limiting data retrieval to the first 10 000 nfts for a given query filter. So I'm querying by different filters
-DTSET_NAME = "breedcount6"
+from queries import query, variables, parts
 
 URL = "https://axieinfinity.com/graphql-server-v2/graphql"
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-start_date = str(datetime.date.today())
 
-# For some reason I cannot save 10 000 rows of json at once so i do batches and then append them
-jsn = []
-for batch in range(0, 2):  # (0,10000)
-    start = batch * 5000
-    end = batch * 5000 + 5000
-    for i in range(start, end, 100):
+
+def save_data(data, name):
+    start_date = str(datetime.date.today())
+    # Create the folder if it doens't exist
+    path = pathlib.Path(__file__).resolve().parent / f"../data/{start_date}"
+    path.mkdir(parents=True, exist_ok=True)
+    # Remove data if it already exists
+    if os.path.isfile(f"../data/{start_date}/{name}.json"):
+        os.remove(f"../data/{start_date}/{name}.json")
+    # Save the data
+    with open(f"./data/{start_date}/{name}.json", "w") as f:
+        json.dump(data, f)
+    return
+
+
+def get_data(name, part=None, classs=None):
+    jsn = []
+    empty_request_streak = 0
+    print(f"\nQuerying by: {part}, {classs}")
+    for i in range(0, 10000, 100):
         request = requests.post(
             URL,
-            json={"query": query, "variables": variables(fromm=i)},
+            json={
+                "query": query,
+                "variables": variables(fromm=i, parts=part, classes=classs),
+            },
             verify=False,
         )
-        if not request.status_code == 200:
-            raise Exception(f"Unexpected status code returned: {request.status_code}")
+        try:
+            assert request.status_code == 200
+        except AssertionError:
+            print(f"Unexpected status code returned: {request.status_code}")
+            time.sleep(10)
+            break
         try:
             a = request.json()
             jsn_data = request.json()["data"]["axies"]["results"]
-            assert len(jsn_data) != 0
+            try:
+                assert len(jsn_data) != 0
+            except AssertionError:
+                empty_request_streak += 1
+                print("Empty request response")
+                if empty_request_streak > 4:
+                    print("Moving onto the next query")
+                    save_data(data=jsn, name=str(part))
+                    return
+            else:
+                empty_request_streak = 0
         except:
-            print("Request response in wrong format or empty")
+            print("Request response in the wrong format")
         else:
             not_parsed_axies = 0
             for ax in jsn_data:
@@ -136,7 +107,6 @@ for batch in range(0, 2):  # (0,10000)
                                 "Price": price,
                             }
                         )
-
             print(
                 f"Sorted by price: {i}-{i+100}",
                 f"\nn_axies failed to parse: ",
@@ -145,12 +115,19 @@ for batch in range(0, 2):  # (0,10000)
                 len(jsn_data),
             )
         time.sleep(random.lognormvariate(0.7, 0.5))
+    save_data(data=jsn, name=name)
+    return
 
-path = pathlib.Path(__file__).resolve().parent / f"data/{start_date}"
-path.mkdir(parents=True, exist_ok=True)
-# Remove data if it already exists
-if os.path.isfile(f"../data/{start_date}/{DTSET_NAME}.json"):
-    os.remove(f"../data/{start_date}/{DTSET_NAME}.json")
-# Save data
-with open(f"../data/{start_date}/{DTSET_NAME}.json", "w") as f:
-    json.dump(jsn, f)
+
+if __name__ == "__main__":
+    # There are 131 parts. Might be better to split the this up
+    # 0:15 done
+    # 120:125 done
+    # 65 : 77 done
+    # 53  dawn  done
+    for classs in ["Dawn"]:
+        for part in parts[54:60]:
+            get_data(name=str(part) + str(classs), classs=classs, part=part)
+        # get_data(name=part, part=part)
+    #     get_data(name=classs, classs=classs)
+    # Dusk, Dawn, Mech, Bug   done

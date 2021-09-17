@@ -1,8 +1,13 @@
 
-# Train the models successfully
-# Automate data collection calling the api with different queries
+# Tune the lightgbm model with optuna
+# Follow feature importance and memory usage tips on the kaggle post
+# Engineer better features: Bonuses by class for cards. All the cards, one hot encoded
+# Download data for a more balanced the dataset
+
+# Do the inference in Go
+# Set up data tests with great_expectations
 
 # TODO: Move to s3 and sagemaker
 # TODO: Move the inference to kinesis and lambda. Check the record weights in kinesis
-# TODO: Make the process of feature engineering equal for model training and inference to prevent problems in case of data format "drift" 
-# TODO: Place the code in a cloudfront yaml file
+# TODO: Make the process of feature engineering very similar for model training and for inference to prevent problems in case of data format "drift" 
+# TODO: Set up a cloudfront or terraform file?

@@ -13,7 +13,7 @@ import boto3
 import discord
 from dotenv import load_dotenv
 
-from _1_preprocessing.feature_engineering import score_df
+from _1_preprocessing._2_feature_engineering import score_df
 
 load_dotenv()
 
@@ -92,7 +92,7 @@ def get_posts(session, start, end, step=100):
                 session.post(
                     URL,
                     json={"query": query, "variables": variables(fromm=i)},
-                    proxy=PRXY,
+                    # proxy=PRXY,
                     ssl=False,
                 )
             )
@@ -135,7 +135,7 @@ def compare_two_prices(row, id_):
     global n_found
     global bargains
     if (
-        (row["Price"] + 100 < row["Prediction"])
+        (row["Price"] + 25 < row["Prediction"])
         and (row["Price"] > 50)
         and (id_ not in bargains)
     ):
@@ -146,6 +146,10 @@ def compare_two_prices(row, id_):
                 https://marketplace.axieinfinity.com/axie/{id_}
                 price: {row['Price']} usd
                 price prediction: {row['Prediction']}
+                breedCount: {row['BreedCount']}
+                card_score: {row['sum_card_score']}
+                combo_score: {row['sum_combo_score']}
+                build_score: {row['build_score']}
                 """,
             embed=discord.Embed().set_image(url=row["Image"]),
         )
@@ -155,11 +159,6 @@ def compare_prices(price_comparaison):
     price_comparaison.apply(lambda df: compare_two_prices(df, df.name), axis=1)
 
 
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-TIMEOUT = 20
-STEP = 500
-FIRST_AXIE = 3000
-bargains = set()  # Don´t retrieve the same nft twice
 # Model
 with open("./_2_model_training/_RF.pkl", "rb") as f:  # RF, KNN, tree, polynomial
     model = pickle.load(f)
@@ -171,10 +170,17 @@ with open("./_1_preprocessing/scores_lookup.txt") as f:
     for i in f.readlines():
         scores_lookup = i
 scores_lookup = eval(scores_lookup)
+
+
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+TIMEOUT = 25
+STEP = 100  # 500
+FIRST_AXIE = 5000
+bargains = set()  # Don´t retrieve the same nft twice
 #
 try:
     while True:
-        for i in range(4):
+        for i in range(50):
             init = FIRST_AXIE + i * STEP
             f = FIRST_AXIE + STEP + i * STEP
             n_found = 0

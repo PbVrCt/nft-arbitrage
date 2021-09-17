@@ -11,8 +11,12 @@ scikit-learn
 keras_tuner
 tensorflow
 tqdm
+seaborn
+matplotlib
+scipy
+lightgbm
+optuna
 
 selenium
 cssselect
 lxml
-matplotlib
