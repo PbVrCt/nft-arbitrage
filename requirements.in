@@ -15,7 +15,7 @@ seaborn
 matplotlib
 scipy
 lightgbm
-optuna
+numpy
 
 selenium
 cssselect

@@ -30,6 +30,7 @@ fragment AxieBrief on Axie {
 
 def variables(
     fromm,
+    sort="PriceAsc"
     parts=None,
     classes=None,
     pureness=None,
@@ -43,7 +44,7 @@ def variables(
     return {
         "from": fromm,
         "size": size,
-        "sort": "PriceAsc",
+        "sort": sort,
         "auctionType": "Sale",
         "owner": None,
         "criteria": {

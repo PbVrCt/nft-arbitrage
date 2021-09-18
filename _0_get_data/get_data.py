@@ -29,16 +29,38 @@ def save_data(data, name):
     return
 
 
-def get_data(name, part=None, classs=None):
+def get_data(
+    name,
+    part=None,
+    classs=None,
+    pureness=None,
+    breedCount=None,
+    hp=None,
+    skill=None,
+    speed=None,
+    morale=None,
+    sort="PriceAsc",
+):
     jsn = []
     empty_request_streak = 0
     print(f"\nQuerying by: {part}, {classs}")
-    for i in range(0, 10000, 100):
+    for i in range(0, 10000, 400):
         request = requests.post(
             URL,
             json={
                 "query": query,
-                "variables": variables(fromm=i, parts=part, classes=classs),
+                "variables": variables(
+                    fromm=i,
+                    parts=part,
+                    classes=classs,
+                    pureness=pureness,
+                    breedCount=breedCount,
+                    hp=hp,
+                    skill=skill,
+                    speed=speed,
+                    morale=morale,
+                    sort=sort,
+                ),
             },
             verify=False,
         )
@@ -73,22 +95,18 @@ def get_data(name, part=None, classs=None):
                         class_ = ax["class"]
                         price = ax["auction"]["currentPriceUSD"]
                         breedCount = ax["breedCount"]
-                        pureness = Counter(
-                            [
-                                ax["parts"][0]["class"],
-                                ax["parts"][1]["class"],
-                                ax["parts"][2]["class"],
-                                ax["parts"][3]["class"],
-                                ax["parts"][4]["class"],
-                                ax["parts"][5]["class"],
-                            ]
-                        ).most_common(1)[0][1]
                         eyes = ax["parts"][0]["name"]
                         ears = ax["parts"][1]["name"]
                         back = ax["parts"][2]["name"]
                         mouth = ax["parts"][3]["name"]
                         horn = ax["parts"][4]["name"]
                         tail = ax["parts"][5]["name"]
+                        eyes_type = ax["parts"][0]["class"]
+                        ears_type = ax["parts"][1]["class"]
+                        back_type = ax["parts"][2]["class"]
+                        mouth_type = ax["parts"][3]["class"]
+                        horn_type = ax["parts"][4]["class"]
+                        tail_type = ax["parts"][5]["class"]
                     except:
                         not_parsed_axies += 1
                     else:
@@ -96,7 +114,6 @@ def get_data(name, part=None, classs=None):
                             {
                                 "Id": id_,
                                 "BreedCount": breedCount,
-                                "Pureness": pureness,
                                 "Class": class_,
                                 "Eyes": eyes,
                                 "Ears": ears,
@@ -104,6 +121,12 @@ def get_data(name, part=None, classs=None):
                                 "Mouth": mouth,
                                 "Horn": horn,
                                 "Tail": tail,
+                                "EyesType": eyes_type,
+                                "EarsType": ears_type,
+                                "BackType": back_type,
+                                "MouthType": mouth_type,
+                                "HornType": horn_type,
+                                "TailType": tail_type,
                                 "Price": price,
                             }
                         )
@@ -120,14 +143,47 @@ def get_data(name, part=None, classs=None):
 
 
 if __name__ == "__main__":
-    # There are 131 parts. Might be better to split the this up
-    # 0:15 done
-    # 120:125 done
-    # 65 : 77 done
-    # 53  dawn  done
-    for classs in ["Dawn"]:
-        for part in parts[54:60]:
-            get_data(name=str(part) + str(classs), classs=classs, part=part)
-        # get_data(name=part, part=part)
-    #     get_data(name=classs, classs=classs)
-    # Dusk, Dawn, Mech, Bug   done
+    # There are 131 parts. Might be better to split this up
+    # 0-21 Aquatic
+    # 21-43 Beast
+    # 44-65 Bird
+    # 66 - 87 Bug
+    # 88 - 109 Plant
+    # 110 - 131 Reptile
+    # Mech : Beast + Bug
+    # Dawn : Plant + Bird
+    # Dusk : Reptile + Aquatic
+
+    for part in parts[0:131]:
+        get_data(name=part, part=part)
+
+    for classs in [
+        "Aquatic",
+        "Beast",
+        "Bird",
+        "Bug",
+        "Plant",
+        "Reptile",
+        "Mech",
+        "Dawn",
+        "Dusk",
+    ]:
+        get_data(name=str(part) + "PriceDesc", classs=classs, sort="PriceDesc")
+
+    # for classs in ["Mech"]:
+    #     for part in parts[25:35]:
+    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
+    #     for part in parts[70:80]:
+    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
+
+    # for classs in ["Dawn"]:
+    #     for part in parts[50:60]:
+    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
+    #     for part in parts[95:105]:
+    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
+
+    # for classs in ["Dusk"]:
+    #     for part in parts[5:15]:
+    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
+    #     for part in parts[115:125]:
+    #         get_data(name=str(part) + str(classs), classs=classs, part=part)

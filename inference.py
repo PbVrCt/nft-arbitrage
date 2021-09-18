@@ -160,7 +160,7 @@ def compare_prices(price_comparaison):
 
 
 # Model
-with open("./_2_model_training/_RF.pkl", "rb") as f:  # RF, KNN, tree, polynomial
+with open("./_2_model_training/_RF.pkl", "rb") as f:  # XGBOOST,lightGBM,KNN,polynomial
     model = pickle.load(f)
 # One hot encoder for the axie class
 with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
@@ -199,22 +199,18 @@ try:
                             image = ax["image"]
                             price = float(ax["auction"]["currentPriceUSD"])
                             breedCount = ax["breedCount"]
-                            pureness = Counter(
-                                [
-                                    ax["parts"][0]["class"],
-                                    ax["parts"][1]["class"],
-                                    ax["parts"][2]["class"],
-                                    ax["parts"][3]["class"],
-                                    ax["parts"][4]["class"],
-                                    ax["parts"][5]["class"],
-                                ]
-                            ).most_common(1)[0][1]
                             eyes = ax["parts"][0]["name"]
                             ears = ax["parts"][1]["name"]
                             back = ax["parts"][2]["name"]
                             mouth = ax["parts"][3]["name"]
                             horn = ax["parts"][4]["name"]
                             tail = ax["parts"][5]["name"]
+                            eyes_type = ax["parts"][0]["class"]
+                            ears_type = ax["parts"][1]["class"]
+                            back_type = ax["parts"][2]["class"]
+                            mouth_type = ax["parts"][3]["class"]
+                            horn_type = ax["parts"][4]["class"]
+                            tail_type = ax["parts"][5]["class"]
                             axie_info = pd.DataFrame(
                                 {
                                     "BreedCount": breedCount,
@@ -226,6 +222,12 @@ try:
                                     "Mouth": mouth,
                                     "Horn": horn,
                                     "Tail": tail,
+                                    "EyesType": eyes_type,
+                                    "EarsType": ears_type,
+                                    "BackType": back_type,
+                                    "MouthType": mouth_type,
+                                    "HornType": horn_type,
+                                    "TailType": tail_type,
                                 },
                                 index=[id_],
                             )
