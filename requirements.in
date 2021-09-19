@@ -16,6 +16,7 @@ matplotlib
 scipy
 lightgbm
 numpy
+great-expectations
 
 selenium
 cssselect

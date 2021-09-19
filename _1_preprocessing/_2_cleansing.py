@@ -12,19 +12,19 @@ sns.set_theme()
 # Check the number or rows, drop duplicate rows, drop prices above treshold
 df = pd.read_json(f"./data/full_raw.json")
 print("\nTotal rows: ", df.shape[0])
-df = df.drop_duplicates(subset=["Id", "Price"]).drop(columns=["Id"])
+df = df.drop_duplicates(subset=["Id"]).drop(columns=["Id"])  # ["Id","Price"]
 print("Total rows wtihout duplicates: ", df.shape[0])
-df = df[df["Price"] < 1500].copy()
-print("Total rows wtih prices below 800: ", df.shape[0])
+df = df[df["Price"] < 3000].copy()
+print("Total rows below price treshold: ", df.shape[0])
 
 # Subsample, weighting more the less frequent classes
 probs = 1 / df["Class"].map(df["Class"].value_counts())
-df = df.sample(n=120000, weights=probs)
-print("Total rows after subsampling: ", df.shape[0])
-# Subsample, weighting more the less frequent prices
-probs = (1 / df["Price"].map(df["Class"].value_counts(normalize=True))) + 1
-df = df.sample(n=120000, weights=probs)
-print("Total rows after subsampling: ", df.shape[0])
+df = df.sample(n=14000, weights=probs)
+print("Total rows after subsampling by class: ", df.shape[0])
+# # Subsample, weighting more the less frequent prices
+# probs = 1 / df["Price"].map(df["Price"].value_counts(normalize=True)) + 1
+# df = df.sample(n=12000, weights=probs)
+# print("Total rows after subsampling by price: ", df.shape[0])
 
 features = df.loc[:, df.columns != "Price"]
 labels = df.loc[:, "Price"]
@@ -60,8 +60,10 @@ sns.displot(
     aspect=2,
 ).set(title="Distribution of anomaly values", xlabel="Anomaly score")
 plt.axvline(quantile_01, c="red", linestyle="--", label="0.01 quantile")
-plt.draw()
-plt.pause(10)
+
+plt.show()
+# plt.draw()
+# plt.pause(10)
 
 # Discard anomalies      -1 = anomaly, 1 = ok
 anomaly_prediction = model_isof.predict(X=labels.to_numpy().reshape(-1, 1))

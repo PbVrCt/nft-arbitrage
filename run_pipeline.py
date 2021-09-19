@@ -3,8 +3,9 @@ import importlib
 # importlib.import_module("_0_get_data.get_data")
 # scrape leaderboard data in jupyter
 
+# importlib.import_module("_1_preprocessing._set_data_tests")
 importlib.import_module("_1_preprocessing._0_merge_data")
-# # importlib.import_module("_1_preprocessing._1_data_tests")
+importlib.import_module("_1_preprocessing._1_run_data_tests")
 importlib.import_module("_1_preprocessing._2_cleansing")
 importlib.import_module("_1_preprocessing._3_feature_engineering")
 

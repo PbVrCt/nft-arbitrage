@@ -9,7 +9,7 @@ from collections import Counter
 import urllib3
 import requests
 
-from queries import query, variables, parts
+from _0_get_data.queries import query, variables, parts
 
 URL = "https://axieinfinity.com/graphql-server-v2/graphql"
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -142,48 +142,48 @@ def get_data(
     return
 
 
-if __name__ == "__main__":
-    # There are 131 parts. Might be better to split this up
-    # 0-21 Aquatic
-    # 21-43 Beast
-    # 44-65 Bird
-    # 66 - 87 Bug
-    # 88 - 109 Plant
-    # 110 - 131 Reptile
-    # Mech : Beast + Bug
-    # Dawn : Plant + Bird
-    # Dusk : Reptile + Aquatic
+# if __name__ == "__main__":
+# There are 131 parts. Might be better to split this up
+# 0-21 Aquatic
+# 21-43 Beast
+# 44-65 Bird
+# 66 - 87 Bug
+# 88 - 109 Plant
+# 110 - 131 Reptile
+# Mech : Beast + Bug
+# Dawn : Plant + Bird
+# Dusk : Reptile + Aquatic
 
-    for part in parts[0:131]:
-        get_data(name=part, part=part)
+for part in parts[0:131]:
+    get_data(name=part, part=part)
 
-    for classs in [
-        "Aquatic",
-        "Beast",
-        "Bird",
-        "Bug",
-        "Plant",
-        "Reptile",
-        "Mech",
-        "Dawn",
-        "Dusk",
-    ]:
-        get_data(name=str(part) + "PriceDesc", classs=classs, sort="PriceDesc")
+for classs in [
+    "Aquatic",
+    "Beast",
+    "Bird",
+    "Bug",
+    "Plant",
+    "Reptile",
+    "Mech",
+    "Dawn",
+    "Dusk",
+]:
+    get_data(name=str(part) + "PriceDesc", classs=classs, sort="PriceDesc")
 
-    # for classs in ["Mech"]:
-    #     for part in parts[25:35]:
-    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
-    #     for part in parts[70:80]:
-    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
+# for classs in ["Mech"]:
+#     for part in parts[25:35]:
+#         get_data(name=str(part) + str(classs), classs=classs, part=part)
+#     for part in parts[70:80]:
+#         get_data(name=str(part) + str(classs), classs=classs, part=part)
 
-    # for classs in ["Dawn"]:
-    #     for part in parts[50:60]:
-    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
-    #     for part in parts[95:105]:
-    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
+# for classs in ["Dawn"]:
+#     for part in parts[50:60]:
+#         get_data(name=str(part) + str(classs), classs=classs, part=part)
+#     for part in parts[95:105]:
+#         get_data(name=str(part) + str(classs), classs=classs, part=part)
 
-    # for classs in ["Dusk"]:
-    #     for part in parts[5:15]:
-    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
-    #     for part in parts[115:125]:
-    #         get_data(name=str(part) + str(classs), classs=classs, part=part)
+# for classs in ["Dusk"]:
+#     for part in parts[5:15]:
+#         get_data(name=str(part) + str(classs), classs=classs, part=part)
+#     for part in parts[115:125]:
+#         get_data(name=str(part) + str(classs), classs=classs, part=part)

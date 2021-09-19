@@ -1,7 +1,5 @@
 
-# Set up data tests with great_expectations
 # Do the inference in Go
-# Check subsampling by weights once the pipeline finishes running
 
 # TODO: Move to s3 and sagemaker
 # TODO: Move the inference to kinesis and lambda. Check the record weights in kinesis

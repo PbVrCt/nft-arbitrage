@@ -5,7 +5,7 @@ import great_expectations as ge
 context = ge.get_context()
 # Create data source
 datasource_config = {
-    "name": "raw_data",
+    "name": "mysource",
     "class_name": "Datasource",
     "module_name": "great_expectations.datasource",
     "execution_engine": {
@@ -20,7 +20,7 @@ datasource_config = {
         },
         "default_inferred_data_connector_name": {
             "class_name": "InferredAssetFilesystemDataConnector",
-            "base_directory": "..\\0_raw data",
+            "base_directory": "..\\data",
             "default_regex": {"group_names": ["data_asset_name"], "pattern": "(.*)"},
         },
     },
