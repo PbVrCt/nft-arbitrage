@@ -13,7 +13,7 @@ import boto3
 import discord
 from dotenv import load_dotenv
 
-from _1_preprocessing._2_feature_engineering import score_df
+from _1_preprocessing._3_feature_engineering import score_df
 
 load_dotenv()
 
@@ -51,7 +51,7 @@ def variables(fromm):
     return {
         "from": fromm,
         "size": 100,
-        "sort": "PriceAsc",
+        "sort": "Latest",
         "auctionType": "Sale",
         "owner": None,
         "criteria": {
@@ -135,7 +135,7 @@ def compare_two_prices(row, id_):
     global n_found
     global bargains
     if (
-        (row["Price"] + 25 < row["Prediction"])
+        (row["Price"] + 400 < row["Prediction"])
         and (row["Price"] > 50)
         and (id_ not in bargains)
     ):
@@ -146,10 +146,11 @@ def compare_two_prices(row, id_):
                 https://marketplace.axieinfinity.com/axie/{id_}
                 price: {row['Price']} usd
                 price prediction: {row['Prediction']}
-                breedCount: {row['BreedCount']}
+                multiplier_score: {row['multiplier_score']}
                 card_score: {row['sum_card_score']}
                 combo_score: {row['sum_combo_score']}
                 build_score: {row['build_score']}
+                breedCount: {row['BreedCount']}
                 """,
             embed=discord.Embed().set_image(url=row["Image"]),
         )
@@ -160,7 +161,7 @@ def compare_prices(price_comparaison):
 
 
 # Model
-with open("./_2_model_training/_RF.pkl", "rb") as f:  # XGBOOST,lightGBM,KNN,polynomial
+with open("./_2_model_training/_XGBOOST.pkl", "rb") as f:  # XGBOOST,lightGBM,KNN,tree
     model = pickle.load(f)
 # One hot encoder for the axie class
 with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
@@ -171,16 +172,15 @@ with open("./_1_preprocessing/scores_lookup.txt") as f:
         scores_lookup = i
 scores_lookup = eval(scores_lookup)
 
-
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 TIMEOUT = 25
 STEP = 100  # 500
-FIRST_AXIE = 5000
+FIRST_AXIE = 4000
 bargains = set()  # Don´t retrieve the same nft twice
 #
 try:
     while True:
-        for i in range(50):
+        for i in range(40):
             init = FIRST_AXIE + i * STEP
             f = FIRST_AXIE + STEP + i * STEP
             n_found = 0
@@ -214,7 +214,6 @@ try:
                             axie_info = pd.DataFrame(
                                 {
                                     "BreedCount": breedCount,
-                                    "Pureness": pureness,
                                     "Class": class_,
                                     "Eyes": eyes,
                                     "Ears": ears,

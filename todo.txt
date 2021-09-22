@@ -1,5 +1,6 @@
 
 # Do the inference in Go
+# More elaborate feature engineering -> Try training a NN
 
 # TODO: Move to s3 and sagemaker
 # TODO: Move the inference to kinesis and lambda. Check the record weights in kinesis

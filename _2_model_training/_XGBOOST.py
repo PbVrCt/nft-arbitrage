@@ -20,7 +20,7 @@ test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 
 
 # Define the model: Random Forest
-class RF(kt.HyperModel):
+class XGBOOST(kt.HyperModel):
     def build(self, hp):
         model_type = hp.Choice("model_type", ["random_forest", "xgboost"])
         n_estimators = hp.Int("n_estimators", 10, 200)
@@ -50,7 +50,7 @@ class RF(kt.HyperModel):
         return model
 
 
-hypermodel = RF()
+hypermodel = XGBOOST()
 # Find optimal hyperparameters
 tuner = kt.tuners.SklearnTuner(
     oracle=kt.oracles.BayesianOptimizationOracle(
@@ -63,7 +63,7 @@ tuner = kt.tuners.SklearnTuner(
         metrics.mean_squared_error, greater_is_better=False
     ),  # mean_absolute_error, mean_squared_error, max_error
     cv=model_selection.RepeatedKFold(n_splits=7, n_repeats=1, random_state=1),
-    project_name="Keras_tuner_metadata/RF",
+    project_name="Keras_tuner_metadata/XGBOOST",
     overwrite=True,
 )
 tuner.search(features, labels)
@@ -93,5 +93,5 @@ print(
 )
 
 # Save the model
-with open("_2_model_training/_RF.pkl", "wb") as f:
+with open("_2_model_training/_XGBOOST.pkl", "wb") as f:
     pickle.dump(best_model, f)

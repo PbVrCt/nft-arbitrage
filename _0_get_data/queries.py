@@ -1,5 +1,5 @@
 query = """
-query GetAxieLatest($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {
+query GetAxieBriefList($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {
   axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {
     results {
       ...AxieBrief
@@ -30,7 +30,7 @@ fragment AxieBrief on Axie {
 
 def variables(
     fromm,
-    sort="PriceAsc",
+    sort="Latest",
     parts=None,
     classes=None,
     pureness=None,

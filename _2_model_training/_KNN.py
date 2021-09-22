@@ -18,8 +18,8 @@ test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 # Define the model and hyperpameters
 model = neighbors.KNeighborsRegressor()
 n_neighbors = range(5, 25, 2)
-weights = ["uniform", "distance"]
-metric = ["euclidean", "manhattan", "minkowski"]
+weights = ["uniform"]  # , "distance"]
+metric = ["euclidean"]  # , "manhattan", "minkowski"]
 p = [1, 2]
 # Define the search space
 grid = dict(n_neighbors=n_neighbors, weights=weights, metric=metric, p=p)

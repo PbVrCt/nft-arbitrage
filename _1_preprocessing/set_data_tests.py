@@ -66,8 +66,8 @@ for column, values in zip(
 ):
     # print(list(set(df[column].unique()) - set(values)))
     expt_config = ExpectationConfiguration(
-        expectation_type="expect_column_distinct_values_to_equal_set",
-        kwargs={"column": column, "value_set": values},
+        expectation_type="expect_column_values_to_be_in_set",
+        kwargs={"column": column, "value_set": values, "result_format": "SUMMARY"},
     )
     suite2.add_expectation(expectation_configuration=expt_config)
 # Expectation 4

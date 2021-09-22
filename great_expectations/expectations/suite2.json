@@ -111,9 +111,10 @@
       "meta": {}
     },
     {
-      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "expectation_type": "expect_column_values_to_be_in_set",
       "kwargs": {
         "column": "Tail",
+        "result_format": "SUMMARY",
         "value_set": [
           "Koi",
           "Koinobori",
@@ -164,9 +165,10 @@
       "meta": {}
     },
     {
-      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "expectation_type": "expect_column_values_to_be_in_set",
       "kwargs": {
         "column": "Back",
+        "result_format": "SUMMARY",
         "value_set": [
           "Hermit",
           "Crystal Hermit",
@@ -218,9 +220,10 @@
       "meta": {}
     },
     {
-      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "expectation_type": "expect_column_values_to_be_in_set",
       "kwargs": {
         "column": "Horn",
+        "result_format": "SUMMARY",
         "value_set": [
           "Babylonia",
           "Candy Babylonia",
@@ -274,9 +277,10 @@
       "meta": {}
     },
     {
-      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "expectation_type": "expect_column_values_to_be_in_set",
       "kwargs": {
         "column": "Mouth",
+        "result_format": "SUMMARY",
         "value_set": [
           "Lam",
           "Catfish",

@@ -12,18 +12,18 @@ sns.set_theme()
 # Check the number or rows, drop duplicate rows, drop prices above treshold
 df = pd.read_json(f"./data/full_raw.json")
 print("\nTotal rows: ", df.shape[0])
-df = df.drop_duplicates(subset=["Id"]).drop(columns=["Id"])  # ["Id","Price"]
+df = df.drop_duplicates(subset=["Id", "Price"])  # ["Id","Price"]
 print("Total rows wtihout duplicates: ", df.shape[0])
-df = df[df["Price"] < 3000].copy()
+df = df[df["Price"] < 5000].copy()
 print("Total rows below price treshold: ", df.shape[0])
 
 # Subsample, weighting more the less frequent classes
-probs = 1 / df["Class"].map(df["Class"].value_counts())
-df = df.sample(n=14000, weights=probs)
-print("Total rows after subsampling by class: ", df.shape[0])
+# probs = 1 / df["Class"].map(df["Class"].value_counts())
+# df = df.sample(n=310000, weights=probs)
+# print("Total rows after subsampling by class: ", df.shape[0])
 # # Subsample, weighting more the less frequent prices
 # probs = 1 / df["Price"].map(df["Price"].value_counts(normalize=True)) + 1
-# df = df.sample(n=12000, weights=probs)
+# df = df.sample(n=280000, weights=probs)
 # print("Total rows after subsampling by price: ", df.shape[0])
 
 features = df.loc[:, df.columns != "Price"]
@@ -39,7 +39,7 @@ sns.countplot(x="Class", data=df, ax=axes[1, 0])
 sns.kdeplot(data=df, x="Price", hue="Class", fill=True, ax=axes[1, 1])
 
 # Unsupervised anomaly detection model
-ANOMALY_QUANTILE = 0.04  #  "auto"
+ANOMALY_QUANTILE = 0.05  #  "auto"
 model_isof = IsolationForest(
     n_estimators=1000,
     max_samples="auto",
@@ -68,6 +68,7 @@ plt.show()
 # Discard anomalies      -1 = anomaly, 1 = ok
 anomaly_prediction = model_isof.predict(X=labels.to_numpy().reshape(-1, 1))
 df = df.loc[(anomaly_prediction != -1), :]
+print("Total rows after discarding anomalies: ", df.shape[0])
 
 # Save the data
 df.to_csv(f"./data/full_cleansed.csv")

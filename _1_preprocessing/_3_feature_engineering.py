@@ -73,7 +73,7 @@ def assign_multiplier_score(row):
                 score += 0.25
     elif row["Class"] == "Dusk":
         for column in ["BackType", "MouthType", "HornType", "TailType"]:
-            if (row[column] == "Reptile") or (row[column] == "Aquatic"):
+            if (row[column] == "Reptile") or (row[column] == "Plant"):
                 score += 0.25 * 0.75
     elif row["Class"] == "Mech":
         for column in ["BackType", "MouthType", "HornType", "TailType"]:
@@ -81,7 +81,7 @@ def assign_multiplier_score(row):
                 score += 0.25 * 0.75
     elif row["Class"] == "Dawn":
         for column in ["BackType", "MouthType", "HornType", "TailType"]:
-            if (row[column] == "Plant") or (row[column] == "Bird"):
+            if (row[column] == "Aquatic") or (row[column] == "Bird"):
                 score += 0.25 * 0.75
     return score
 
@@ -114,7 +114,7 @@ def score_df(df, scores_lookup, class_encoder, disable_progress_bar=True):
         "Build",
     ]
     # Feature engineering
-    df.loc[:, "Multiplier_score"] = df.apply(assign_multiplier_score, axis=1)
+    df.loc[:, "multiplier_score"] = df.apply(assign_multiplier_score, axis=1)
     for column in tqdm(
         placeholder_columns, disable=disable_progress_bar, desc="Assigning combo scores"
     ):
@@ -163,29 +163,30 @@ def score_df(df, scores_lookup, class_encoder, disable_progress_bar=True):
     return df
 
 
-# Load the data
-leaderboard = pd.read_csv("./_0_get_data_leaderboard/leaderboard.csv")
-df = pd.read_csv(f"./data/full_cleansed.csv", index_col=[0])
+if __name__ == "__main__":
+    # Load the data
+    leaderboard = pd.read_csv("./_0_get_data_leaderboard/leaderboard.csv")
+    df = pd.read_csv(f"./data/full_cleansed.csv", index_col=[0]).set_index(["Id"])
 
-# Fit, save, and load the one hot encoder
-# fit_one_hot_encoder(df)
-with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
-    oh_enc = pickle.load(f)
+    # Fit, save, and load the one hot encoder
+    fit_one_hot_encoder(df)
+    with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
+        oh_enc = pickle.load(f)
 
-# Calculate card and combo scores
-scores_lookup = generate_frecuency_scores_lookup(leaderboard)
-with open("./_1_preprocessing/scores_lookup.txt", "w") as f:
-    f.write(str(scores_lookup))
+    # Calculate card and combo scores
+    scores_lookup = generate_frecuency_scores_lookup(leaderboard)
+    with open("./_1_preprocessing/scores_lookup.txt", "w") as f:
+        f.write(str(scores_lookup))
 
-# Check if the feature engineering is done fast enough for real time inference
-# start = time.time()
-# row = score_df(df.iloc[-100:], scores_lookup, oh_enc)
-# end = time.time()
-# print("Time elapsed in feature engineering 100 nft: ", end - start, "s")
-# print(row)
+    # Check if the feature engineering is done fast enough for real time inference
+    # start = time.time()
+    # row = score_df(df.iloc[-100:], scores_lookup, oh_enc)
+    # end = time.time()
+    # print("Time elapsed in feature engineering 100 nft: ", end - start, "s")
+    # print(row)
 
-# Do the feature engineering on the data and save it
-df = score_df(df, scores_lookup, oh_enc, disable_progress_bar=False)
-print(df.head())
-df.to_csv(f"./data/full_engineered.csv")
-print("\nSaved")
+    # Do the feature engineering on the data and save it
+    df = score_df(df, scores_lookup, oh_enc, disable_progress_bar=False)
+    print(df.head())
+    df.to_csv(f"./data/full_engineered.csv")
+    print("\nSaved")

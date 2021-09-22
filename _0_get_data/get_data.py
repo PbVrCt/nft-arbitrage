@@ -39,12 +39,12 @@ def get_data(
     skill=None,
     speed=None,
     morale=None,
-    sort="PriceAsc",
+    sort="Latest",
 ):
     jsn = []
     empty_request_streak = 0
-    print(f"\nQuerying by: {part}, {classs}")
-    for i in range(0, 10000, 400):
+    print(f"\nQuerying by: {part}, {classs},{breedCount},{pureness}")
+    for i in range(0000, 10000, 100):
         request = requests.post(
             URL,
             json={
@@ -151,11 +151,18 @@ def get_data(
 # 88 - 109 Plant
 # 110 - 131 Reptile
 # Mech : Beast + Bug
-# Dawn : Plant + Bird
-# Dusk : Reptile + Aquatic
+# Dawn : Aquatic + Bird
+# Dusk : Reptile + Plant
 
-for part in parts[0:131]:
-    get_data(name=part, part=part)
+# for breedCount in [0, 1, 2, 3, 4, 5, 6]:
+#     for pureness in [2, 3, 4, 5, 6]:
+#         for part in parts[0:131]:
+#             get_data(
+#                 name=str(breedCount) + str(pureness) + str(part),
+#                 part=part,
+#                 breedCount=breedCount,
+#                 pureness=pureness,
+#             )
 
 for classs in [
     "Aquatic",
@@ -168,22 +175,22 @@ for classs in [
     "Dawn",
     "Dusk",
 ]:
-    get_data(name=str(part) + "PriceDesc", classs=classs, sort="PriceDesc")
+    get_data(name=str(classs) + str(2), classs=classs)
 
 # for classs in ["Mech"]:
-#     for part in parts[25:35]:
+#     for part in parts[21:43]:
 #         get_data(name=str(part) + str(classs), classs=classs, part=part)
-#     for part in parts[70:80]:
+#     for part in parts[66:87]:
 #         get_data(name=str(part) + str(classs), classs=classs, part=part)
 
 # for classs in ["Dawn"]:
-#     for part in parts[50:60]:
+#     for part in parts[44:65]:
 #         get_data(name=str(part) + str(classs), classs=classs, part=part)
-#     for part in parts[95:105]:
+#     for part in parts[0:21]:
 #         get_data(name=str(part) + str(classs), classs=classs, part=part)
 
 # for classs in ["Dusk"]:
-#     for part in parts[5:15]:
+#     for part in parts[88:109]:
 #         get_data(name=str(part) + str(classs), classs=classs, part=part)
-#     for part in parts[115:125]:
+#     for part in parts[110:131]:
 #         get_data(name=str(part) + str(classs), classs=classs, part=part)
