@@ -101,7 +101,7 @@ type Part struct {
 }
 
 // FORMAT RESPONSE
-func ExtractInfo(blob JsonBlob) []AxieInfo {
+func ExtractBatchInfo(blob JsonBlob) []AxieInfo {
 	var Axies []AxieInfo
 	for _, axie := range blob.Data.Axies.Results {
 		Axies = append(Axies, ExtractAxieInfo(axie))
