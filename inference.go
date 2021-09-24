@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"sync"
@@ -15,66 +16,70 @@ import (
 
 var post_queque = make(chan int, 50)             // Input channel
 var responses_queque = make(chan []AxieInfo, 50) // Output channel
-var batches []AxieInfo
+const NTHREADS = 1                               // Number of threads in the worker pool doing requests ; NTHREADS < cap(post_queque)
 var PRX string
 var URL string = "https://axieinfinity.com/graphql-server-v2/graphql"
 
 func main() {
 	godotenv.Load()
 	PRX = os.Getenv("URL")
-	DISCORD_WEBHOOK_URL := os.Getenv("DISCORD_WEBHOOK_URL")
-	// WEBHOOK := discord.Webhook.from_url(  // Replicate the python equivalent using the discordgo library
-	// 	DISCORD_WEBHOOK_URL, adapter=discord.RequestsWebhookAdapter()
-	// )
-
+	DISCORD_ID := os.Getenv("DISCORD_WEBHOOK_ID")
+	DISCORD_TOKEN := os.Getenv("DISCORD_WEBHOOK_TOKEN")
 	go get_data()
-	go predict_on_batches()
+	go predict_on_batches(DISCORD_ID, DISCORD_TOKEN)
+	select {} // So the script runs until cancelled
 }
 
-func predict_on_batches() {
+func predict_on_batches(DISCORD_ID string, DISCORD_TOKEN string) {
+	api_client := &http.Client{Timeout: time.Second * 10}
 	for {
 		batch := <-responses_queque
-		for _, nft := range batch {
-			// feature_engineering(nft)    Will be Python embedded code or call to a Python api
-			// predict(nft)				   Will be Python embedded code or call to a Python api
-			// if prediction > price + 50 {
-			// 	notify discord(prediction, nft)
-			// }
+		batch_results := feature_engineer_and_predict(batch, api_client)
+		for _, nft := range batch_results {
+			// nft_processed = feature_engineering(nft)
+			if nft.Prediction > nft.Price+50 {
+				notify_discord(nft, DISCORD_ID, DISCORD_TOKEN)
+			}
 		}
 	}
 }
 
-func notify_discord(price_prediction int, nft AxieInfo) { // Replicate the python equivalent using the discordgo library
-	// WEBHOOK.send(
-	// 	f"""
-	// 		https://marketplace.axieinfinity.com/axie/{id_}
-	// 		price: {row['Price']} usd
-	// 		price prediction: {row['Prediction']}
-	// 		multiplier_score: {row['multiplier_score']}
-	// 		card_score: {row['sum_card_score']}
-	// 		combo_score: {row['sum_combo_score']}
-	// 		build_score: {row['build_score']}
-	// 		breedCount: {row['BreedCount']}
-	// 		""",
-	// 	embed=discord.Embed().set_image(url=row["Image"]),
-	// )
+// Sends the data in JSON format to a Python server through a Flask API.
+// The feature engineering, model serving and predictions are done in Python, and the results are returned as JSON
+func feature_engineer_and_predict(batch []AxieInfo, api_client *http.Client) []AxieInfoEngineered {
+	b, _ := json.Marshal(batch)
+	request, _ := http.NewRequest("POST", "http://localhost:5000/api/predict", bytes.NewBuffer(b))
+	request.Header.Set("Content-Type", "application/json")
+	response, err := api_client.Do(request)
+	if err != nil {
+		fmt.Printf("The HTTP request to the Python server failed with error: %s\n", err)
+		return nil
+	}
+	defer response.Body.Close()
+	results, _ := ioutil.ReadAll(response.Body)
+	fmt.Println(string(results))
+	var batch_results []AxieInfoEngineered
+	json.Unmarshal([]byte(results), &batch_results)
+	return batch_results
 }
 
 func get_data() {
+	external_api_client := &http.Client{Timeout: time.Second * 10}
 	var break_signal = make(chan bool)
 	var wg sync.WaitGroup
 	// Worker pool: n threads run on a loop calling get_data_batch while jobs arrive from post_queque
-	const nthreads = 5 // nthreads < cap(post_queque)
-	wg.Add(nthreads)
-	for i := 0; i < nthreads; i++ {
+	wg.Add(NTHREADS)
+	for i := 0; i < NTHREADS; i++ {
 		go func() {
 			for {
 				i, ok := <-post_queque
 				if !ok {
+					fmt.Println("Empty requests queque -> Exiting thread.")
 					wg.Done()
 					return
 				}
-				get_data_batch(i)
+				get_data_batch(i, external_api_client)
+				time.Sleep(time.Duration(rand.Intn(1)+1) * time.Second)
 			}
 		}()
 	}
@@ -100,21 +105,25 @@ func get_data() {
 	wg.Wait()
 }
 
-// Gets data from one post request
-func get_data_batch(from int) {
+// Gets data from a single post request to the external API
+func get_data_batch(from int, external_api_client *http.Client) {
 	b, _ := json.Marshal(CreateBody(from))
 	request, _ := http.NewRequest("POST", URL, bytes.NewBuffer(b))
 	request.Header.Set("Content-Type", "application/json")
-	client := &http.Client{Timeout: time.Second * 10}
-	response, err := client.Do(request)
+	response, err := external_api_client.Do(request)
 	if err != nil {
-		fmt.Printf("The HTTP request failed with error %s\n", err)
+		fmt.Printf("The HTTP request to the external API failed with error: %s\n", err)
 		return
 	}
 	defer response.Body.Close()
-	data, _ := ioutil.ReadAll(response.Body)
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("Error reading the response from the external api: %s\n", err)
+		return
+	}
 	var result JsonBlob
 	json.Unmarshal([]byte(data), &result)
 	batch := ExtractBatchInfo(result)
+	fmt.Printf("Success")
 	responses_queque <- batch
 }
