@@ -1,7 +1,9 @@
 
-# Do the inference in Go
-# More elaborate feature engineering -> Try training a NN
+# Check that discord shows stats and parts
+# Implement proxies in inference.go
+# Check that proxies work using some free tial
+# Feature engineer card stats: Attack, Shield, Energy, Debuff -> Try training a NN
+# Automatize the data collection using lambda and s3
 
-# TODO: Move to s3 and sagemaker
-# TODO: Move the inference to kinesis and lambda. Check the record weights in kinesis
-# TODO: Set up a cloudfront or terraform file?
+# Move to sagemaker ?
+# Move the inference to kinesis and lambda? In that case the record weights in kinesis

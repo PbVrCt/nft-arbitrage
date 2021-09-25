@@ -56,7 +56,7 @@ tuner = kt.tuners.SklearnTuner(
     oracle=kt.oracles.BayesianOptimizationOracle(
         # Keras docs: "Note that for this Tuner, the objective for the Oracle should always be set to Objective('score', direction='max')"
         objective=kt.Objective("score", "max"),
-        max_trials=30,
+        max_trials=20,
     ),
     hypermodel=hypermodel,
     scoring=metrics.make_scorer(
@@ -64,7 +64,7 @@ tuner = kt.tuners.SklearnTuner(
     ),  # mean_absolute_error, mean_squared_error, max_error
     cv=model_selection.RepeatedKFold(n_splits=7, n_repeats=1, random_state=1),
     project_name="Keras_tuner_metadata/XGBOOST",
-    overwrite=True,
+    overwrite=False,
 )
 tuner.search(features, labels)
 # Show the results

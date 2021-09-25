@@ -3,6 +3,7 @@ venv/
 .env
 .vscode/
 __pycache__/
+**/__pycache__/
 _0_get_data_leaderboard/
 _1_preprocessing/*.pickle
 _1_preprocessing/*.txt

@@ -17,6 +17,8 @@ scipy
 lightgbm
 numpy
 great-expectations
+flask
+flask-restful
 
 selenium
 cssselect

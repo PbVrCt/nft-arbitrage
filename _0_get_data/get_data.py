@@ -142,28 +142,9 @@ def get_data(
     return
 
 
-# if __name__ == "__main__":
-# There are 131 parts. Might be better to split this up
-# 0-21 Aquatic
-# 21-43 Beast
-# 44-65 Bird
-# 66 - 87 Bug
-# 88 - 109 Plant
-# 110 - 131 Reptile
 # Mech : Beast + Bug
 # Dawn : Aquatic + Bird
 # Dusk : Reptile + Plant
-
-# for breedCount in [0, 1, 2, 3, 4, 5, 6]:
-#     for pureness in [2, 3, 4, 5, 6]:
-#         for part in parts[0:131]:
-#             get_data(
-#                 name=str(breedCount) + str(pureness) + str(part),
-#                 part=part,
-#                 breedCount=breedCount,
-#                 pureness=pureness,
-#             )
-
 for classs in [
     "Aquatic",
     "Beast",
@@ -176,6 +157,16 @@ for classs in [
     "Dusk",
 ]:
     get_data(name=str(classs) + str(2), classs=classs)
+
+# for breedCount in [0, 1, 2, 3, 4, 5, 6]:
+#     for pureness in [2, 3, 4, 5, 6]:
+#         for part in parts[0:131]:
+#             get_data(
+#                 name=str(breedCount) + str(pureness) + str(part),
+#                 part=part,
+#                 breedCount=breedCount,
+#                 pureness=pureness,
+#             )
 
 # for classs in ["Mech"]:
 #     for part in parts[21:43]:

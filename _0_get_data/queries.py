@@ -100,7 +100,9 @@ def variables(
 # Piranha -> Geisha
 # Mosquito -> Feasting Mosquito
 # Cute Bunny -> Kawaii
+# Lam -> Lam Handsome
 
+# Sans mystic
 parts = [
     "Koi",
     "Nimo",
@@ -382,6 +384,7 @@ horn_parts = [
 ]
 mouth_parts = [
     "Lam",
+    "Lam Handsome",
     "Catfish",
     "Risky Fish",
     "Piranha",

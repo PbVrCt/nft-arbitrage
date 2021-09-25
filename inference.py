@@ -1,3 +1,4 @@
+" Old way I was doing inference on real time data before writing 'inference.go', which is much faster if using proxies"
 import json
 import pickle
 import time
@@ -13,7 +14,7 @@ import boto3
 import discord
 from dotenv import load_dotenv
 
-from _1_preprocessing._3_feature_engineering import score_df
+from _1_preprocessing.feature_eng_utils import score_df
 
 load_dotenv()
 
@@ -64,7 +65,7 @@ def variables(fromm):
             "pureness": None,
             "title": None,
             "breedable": None,
-            "breedCount": 0,
+            "breedCount": None,
             "hp": [],
             "skill": [],
             "speed": [],
@@ -175,12 +176,12 @@ scores_lookup = eval(scores_lookup)
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 TIMEOUT = 25
 STEP = 100  # 500
-FIRST_AXIE = 4000
+FIRST_AXIE = 500
 bargains = set()  # Don´t retrieve the same nft twice
 #
 try:
     while True:
-        for i in range(40):
+        for i in range(5):
             init = FIRST_AXIE + i * STEP
             f = FIRST_AXIE + STEP + i * STEP
             n_found = 0
