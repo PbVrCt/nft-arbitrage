@@ -9,28 +9,28 @@ import (
 func notify_discord(nft AxieInfoEngineered, webhook_id string, webhook_token string) {
 	session, _ := discordgo.New()
 	embed := &discordgo.MessageEmbed{
-		Title:       "Link",
-		URL:         "https://marketplace.axieinfinity.com/axie/6073615",
+		Title:       "Compra",
+		URL:         fmt.Sprint("https://marketplace.axieinfinity.com/axie/", nft.Id),
 		Author:      &discordgo.MessageEmbedAuthor{},
 		Color:       0x00ff00, // Green
-		Description: "Precio: 100\nPredicción:" + fmt.Sprint(nft.Price),
+		Description: "Precio:" + fmt.Sprintf("%.0f", nft.Price) + "\nPredicción:" + fmt.Sprintf("%.0f", nft.Prediction),
 		Fields: []*discordgo.MessageEmbedField{
-			&discordgo.MessageEmbedField{
-				Name:   "Planta",
-				Value:  "Vegetal Bite\nPrickly Trap\nSwift Escape\nCarrot Hammer",
+			{
+				Name:   nft.Class,
+				Value:  fmt.Sprint(nft.Mouth, "\n", nft.Back, "\n", nft.Horn, "\n", nft.Tail),
 				Inline: true,
 			},
-			&discordgo.MessageEmbedField{
+			{
 				Name:   "Stats",
-				Value:  "HP: 40\nSp: 40\nSk: 40\nMr: 40",
+				Value:  fmt.Sprint("Hp: ", nft.Hp, "\nSpeed: ", nft.Speed, "\nSkill: ", nft.Skill, "\nMorale: ", nft.Morale),
 				Inline: true,
 			},
 		},
 		Image: &discordgo.MessageEmbedImage{
-			URL: "https://storage.googleapis.com/assets.axieinfinity.com/axies/6073615/axie/axie-full-transparent.png",
+			URL: nft.Image,
 		},
 		// Thumbnail: &discordgo.MessageEmbedThumbnail{
-		// 	URL:    "https://storage.googleapis.com/assets.axieinfinity.com/axies/6073615/axie/axie-full-transparent.png",
+		// 	URL:    nft.Image,
 		// 	Width:  1280,
 		// 	Height: 960,
 		// },

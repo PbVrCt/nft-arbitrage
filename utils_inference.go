@@ -1,6 +1,8 @@
 package main
 
-// POST REQUEST
+import "strconv"
+
+// POST REQUESTS
 func CreateBody(from int) RequestBody {
 	body := RequestBody{}
 	body.Query = query
@@ -69,7 +71,7 @@ type Criteria struct {
 	Morale     *int      `json:"morale"`
 }
 
-// RAW RESPONSE
+// RAW RESPONSES
 type JsonBlob struct {
 	Data struct {
 		Axies struct {
@@ -78,7 +80,7 @@ type JsonBlob struct {
 	} `json:"data"`
 }
 type Axie struct {
-	Id         int        `json:"id"`
+	Id         string     `json:"id"`
 	Class      string     `json:"class"`
 	BreedCount int        `json:"breedCount"`
 	Image      string     `json:"image"`
@@ -87,8 +89,8 @@ type Axie struct {
 	Parts      []Part     `json:"parts"`
 }
 type Auction struct {
-	CurrentPriceUSD int `json:"currentPriceUSD"`
-	CurrentPrice    int `json:"currentPrice"`
+	CurrentPriceUSD string `json:"currentPriceUSD"`
+	CurrentPrice    string `json:"currentPrice"`
 }
 type BattleInfo struct {
 	Banned bool `json:"banned"`
@@ -100,7 +102,7 @@ type Part struct {
 	SpecialGenes *string `json:"specialGenes"`
 }
 
-// FORMAT RESPONSE
+// FORMAT RESPONSES FROM THE EXTERNAL API
 func ExtractBatchInfo(blob JsonBlob) []AxieInfo {
 	var Axies []AxieInfo
 	for _, axie := range blob.Data.Axies.Results {
@@ -111,10 +113,10 @@ func ExtractBatchInfo(blob JsonBlob) []AxieInfo {
 
 func ExtractAxieInfo(ax Axie) AxieInfo {
 	var axie AxieInfo
-	axie.Id = ax.Id
+	axie.Id, _ = strconv.Atoi(ax.Id)
 	axie.Class = ax.Class
 	axie.Image = ax.Image
-	axie.Price = ax.Auction.CurrentPriceUSD
+	axie.Price, _ = strconv.ParseFloat(ax.Auction.CurrentPriceUSD, 32)
 	axie.BreedCount = ax.BreedCount
 	axie.Eyes = ax.Parts[0].Name
 	axie.Ears = ax.Parts[1].Name
@@ -135,7 +137,7 @@ type AxieInfo struct {
 	Id         int
 	Class      string
 	Image      string
-	Price      int
+	Price      float64
 	BreedCount int
 	Eyes       string
 	Ears       string
@@ -151,20 +153,38 @@ type AxieInfo struct {
 	TailType   string
 }
 
+// FORMAT PREDICTIONS FROM THE PYTHON SERVER
 type AxieInfoEngineered struct {
-	Id         int    `json:"Id"`
-	Class      string `json:"Class"`
-	Image      string `json:"Image"`
-	Price      int    `json:"Price"`
-	Prediction int    `json:"Prediction"`
-	Eyes       string `json:"Eyes"`
-	Ears       string `json:"Ears"`
-	Back       string `json:"Back"`
-	Mouth      string `json:"Mouth"`
-	Horn       string `json:"Horn"`
-	Tail       string `json:"Tail"`
-	// Hp         *int   `json:"Hp"`
-	// Skill      *int   `json:"Skill"`
-	// Speed      *int   `json:"Speed"`
-	// Morale     *int   `json:"Morale"`
+	Id         int     `json:"Id"`
+	Class      string  `json:"Class"`
+	Image      string  `json:"Image"`
+	Price      float64 `json:"Price"`
+	Prediction float64 `json:"Prediction"`
+	Eyes       string  `json:"Eyes"`
+	Ears       string  `json:"Ears"`
+	Back       string  `json:"Back"`
+	Mouth      string  `json:"Mouth"`
+	Horn       string  `json:"Horn"`
+	Tail       string  `json:"Tail"`
+	Hp         int     `json:"Hp"`
+	Speed      int     `json:"Sp"`
+	Skill      int     `json:"Sk"`
+	Morale     int     `json:"Mr"`
 }
+
+// var mouth_to_card = map[string]string{
+// 	"part1": "card1",
+// 	"part2": "card2",
+// }
+// var back_to_card = map[string]string{
+// 	"part1": "card1",
+// 	"part2": "card2",
+// }
+// var horn_to_card = map[string]string{
+// 	"part1": "card1",
+// 	"part2": "card2",
+// }
+// var tail_to_card = map[string]string{
+// 	"part1": "card1",
+// 	"part2": "card2",
+// }

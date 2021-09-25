@@ -17,12 +17,13 @@ import (
 var post_queque = make(chan int, 50)             // Input channel
 var responses_queque = make(chan []AxieInfo, 50) // Output channel
 const NTHREADS = 1                               // Number of threads in the worker pool doing requests ; NTHREADS < cap(post_queque)
-var PRX string
+const PAGES_TO_SCAN = 10                         // Each page shows 100 nfts
 var URL string = "https://axieinfinity.com/graphql-server-v2/graphql"
+var bargains = make(map[int]bool)
 
 func main() {
 	godotenv.Load()
-	PRX = os.Getenv("URL")
+	// PRX = os.Getenv("URL")
 	DISCORD_ID := os.Getenv("DISCORD_WEBHOOK_ID")
 	DISCORD_TOKEN := os.Getenv("DISCORD_WEBHOOK_TOKEN")
 	go get_data()
@@ -34,18 +35,23 @@ func predict_on_batches(DISCORD_ID string, DISCORD_TOKEN string) {
 	api_client := &http.Client{Timeout: time.Second * 10}
 	for {
 		batch := <-responses_queque
-		batch_results := feature_engineer_and_predict(batch, api_client)
-		for _, nft := range batch_results {
-			// nft_processed = feature_engineering(nft)
-			if nft.Prediction > nft.Price+50 {
-				notify_discord(nft, DISCORD_ID, DISCORD_TOKEN)
+		go func() {
+			batch_results := feature_engineer_and_predict(batch, api_client) // Takes 0.5s/batch. Keep an eye on the Python server for concurrent requests causing problems
+			bargain_counter := 0
+			for _, nft := range batch_results {
+				if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.Price+200 && nft.Price > 50 {
+					bargains[nft.Id] = true
+					bargain_counter++
+					go notify_discord(nft, DISCORD_ID, DISCORD_TOKEN)
+				}
 			}
-		}
+			fmt.Printf("Bargains: " + fmt.Sprint(bargain_counter) + "/100\n")
+		}()
 	}
 }
 
-// Sends the data in JSON format to a Python server through a Flask API.
-// The feature engineering, model serving and predictions are done in Python, and the results are returned as JSON
+// Sends the data in JSON format to a Python server through a Flask API. Then,
+// the feature engineering, model serving and predictions are done in Python, and the results are returned as a JSON
 func feature_engineer_and_predict(batch []AxieInfo, api_client *http.Client) []AxieInfoEngineered {
 	b, _ := json.Marshal(batch)
 	request, _ := http.NewRequest("POST", "http://localhost:5000/api/predict", bytes.NewBuffer(b))
@@ -57,7 +63,6 @@ func feature_engineer_and_predict(batch []AxieInfo, api_client *http.Client) []A
 	}
 	defer response.Body.Close()
 	results, _ := ioutil.ReadAll(response.Body)
-	fmt.Println(string(results))
 	var batch_results []AxieInfoEngineered
 	json.Unmarshal([]byte(results), &batch_results)
 	return batch_results
@@ -65,8 +70,15 @@ func feature_engineer_and_predict(batch []AxieInfo, api_client *http.Client) []A
 
 func get_data() {
 	external_api_client := &http.Client{Timeout: time.Second * 10}
-	var break_signal = make(chan bool)
 	var wg sync.WaitGroup
+	// Adds jobs to post_queque on an infinite loop
+	go func() {
+		for {
+			for i := 0; i < PAGES_TO_SCAN; i++ {
+				post_queque <- i
+			}
+		}
+	}()
 	// Worker pool: n threads run on a loop calling get_data_batch while jobs arrive from post_queque
 	wg.Add(NTHREADS)
 	for i := 0; i < NTHREADS; i++ {
@@ -74,7 +86,7 @@ func get_data() {
 			for {
 				i, ok := <-post_queque
 				if !ok {
-					fmt.Println("Empty requests queque -> Exiting thread.")
+					fmt.Printf("Exiting thread")
 					wg.Done()
 					return
 				}
@@ -83,26 +95,7 @@ func get_data() {
 			}
 		}()
 	}
-	// Adds jobs to post_queque on an infinite loop
-	go func() {
-		for {
-			for i := 0; i < 10; i++ {
-				post_queque <- i
-			}
-			_, ok := <-break_signal
-			if ok {
-				break
-			}
-		}
-	}()
-	// Press enter to break the infinite loop
-	var input string
-	fmt.Scanln(input)
-	var signal bool
-	break_signal <- signal
-	// Waits for all the jobs that were added before breaking the loop to finish
-	// close(post_queque)
-	wg.Wait()
+	wg.Wait() // For now does nothing because the loop is infinite
 }
 
 // Gets data from a single post request to the external API
@@ -124,6 +117,5 @@ func get_data_batch(from int, external_api_client *http.Client) {
 	var result JsonBlob
 	json.Unmarshal([]byte(data), &result)
 	batch := ExtractBatchInfo(result)
-	fmt.Printf("Success")
 	responses_queque <- batch
 }
