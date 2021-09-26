@@ -1,0 +1,14 @@
+.history/
+venv/
+.env
+.vscode/
+__pycache__/
+**/__pycache__/
+_0_get_data_leaderboard/
+_1_preprocessing/*.pickle
+_1_preprocessing/*.txt
+_2_model_training/*.pkl
+test_snippets
+data/*
+Keras_tuner_metadata/*/**
+TensorBoard_logs/

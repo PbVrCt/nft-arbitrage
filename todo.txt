@@ -1,0 +1,11 @@
+
+# Tain a NN
+# Feature engineer card stats: Attack, Shield, Energy, Debuff
+
+# Automatize the data collection using lambda and s3
+# Move the training to sagemaker ?
+# Check that using proxies works in inference.go
+# Solve the Python server not beging able to handle many concurrent requests
+# Make a revenue dashboard using streamlit. Serve through aws?
+# See if rmse achieves better predictions
+# Move the inference to kinesis and lambda? In that case the record weights in kinesis
