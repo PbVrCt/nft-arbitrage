@@ -19,7 +19,7 @@ print("Total rows below price treshold: ", df.shape[0])
 
 # Subsample, weighting more the less frequent classes
 probs = 1 / df["Class"].map(df["Class"].value_counts())
-df = df.sample(n=int(df.shape[0] * 0.7), weights=probs)
+df = df.sample(n=int(df.shape[0] * 0.3), weights=probs)
 print("Total rows after subsampling by class: ", df.shape[0])
 # # Subsample, weighting more the less frequent prices
 # probs = 1 / df["Price"].map(df["Price"].value_counts(normalize=True)) + 1

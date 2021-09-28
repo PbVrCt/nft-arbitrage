@@ -11,10 +11,11 @@ import (
 	"time"
 )
 
-var post_queque = make(chan int, 50)             // Input channel
-var responses_queque = make(chan []AxieInfo, 50) // Output channel
+var post_queque = make(chan int, 10)             // Input channel
+var responses_queque = make(chan []AxieInfo, 10) // Output channel
 const NTHREADS = 1                               // Number of threads in the worker pool doing requests ; NTHREADS < cap(post_queque)
-const PAGES_TO_SCAN = 2                          // Each page shows 100 nfts
+const MTHREADS = 5                               // Number of threads in the worker pool calling Python ; MTHREADS < cap(response_queque)
+const PAGES_TO_SCAN = 4                          // Each page shows 100 nfts
 var URL string = "https://axieinfinity.com/graphql-server-v2/graphql"
 var bargains = make(map[int]bool)
 
@@ -24,6 +25,32 @@ func main() {
 	go predict_on_batches()
 	select {} // So the script runs until cancelled
 }
+
+// func predict_on_batches() {
+// 	api_client := &http.Client{Timeout: time.Second * 10}
+// 	// Worker pool: m threads take the different batches arriving from responses_queque and call Python for predictions
+// 	for i := 0; i < MTHREADS; i++ {
+// 		go func() {
+// 			for {
+// 				batch, ok := <-responses_queque
+// 				if ok {
+// 					bargain_counter := 0
+// 					batch_results := feature_engineer_and_predict(batch, api_client)
+// 					for _, nft := range batch_results {
+// 						if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.Price+200 && nft.Price > 50 {
+// 							bargains[nft.Id] = true
+// 							bargain_counter++
+// 							go notify_discord(nft)
+// 						}
+// 					}
+// 					fmt.Printf("Bargains: " + fmt.Sprint(bargain_counter) + "/100\n")
+// 				} else {
+// 					fmt.Printf("Error getting data from go channel")
+// 				}
+// 			}
+// 		}()
+// 	}
+// }
 
 func predict_on_batches() {
 	api_client := &http.Client{Timeout: time.Second * 10}
@@ -39,7 +66,6 @@ func predict_on_batches() {
 					go notify_discord(nft)
 				}
 			}
-			fmt.Printf("\n%v\n", batch_results[0].Id)
 			fmt.Printf("Bargains: " + fmt.Sprint(bargain_counter) + "/100\n")
 		}()
 	}
@@ -62,6 +88,8 @@ func feature_engineer_and_predict(batch []AxieInfo, api_client *http.Client) []A
 	json.Unmarshal([]byte(results), &batch_results)
 	if len(batch_results) == 0 {
 		fmt.Print("Empty/bad respone from the Python api - ")
+	} else {
+		fmt.Printf("\n%v\n", batch_results[0].Id)
 	}
 	return batch_results
 }
@@ -124,6 +152,10 @@ func get_data_batch(from int, external_api_client *http.Client) {
 	batch, bool_err = ExtractBatchInfo(result)
 	if bool_err {
 		fmt.Printf("Error. Empty responses from the market api\n")
+		return
+	}
+	if cap(batch) < 132 {
+		fmt.Printf("Response from the market api doesn't have the adeaquate length\n")
 		return
 	}
 	responses_queque <- batch

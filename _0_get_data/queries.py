@@ -52,7 +52,7 @@ def variables(
             "parts": None,
             "bodyShapes": None,
             "classes": None,
-            "stages": None,
+            "stages": 4,
             "numMystic": None,
             "pureness": None,
             "title": None,

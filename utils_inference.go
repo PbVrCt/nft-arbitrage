@@ -12,6 +12,10 @@ func CreateBody(from int) RequestBody {
 	body.Variables.Size = 100
 	body.Variables.Sort = "Latest"
 	body.Variables.AuctionType = "Sale"
+	// var BreedCount int = 0
+	// body.Variables.Criteria.BreedCount = &BreedCount
+	var Stages int = 4
+	body.Variables.Criteria.Stages = &Stages
 	return body
 }
 
@@ -168,6 +172,7 @@ type AxieInfoEngineered struct {
 	Image      string  `json:"Image"`
 	Price      float64 `json:"Price"`
 	Prediction float64 `json:"Prediction"`
+	BreedCount int     `json:"BreedCount"`
 	Eyes       string  `json:"Eyes"`
 	Ears       string  `json:"Ears"`
 	Back       string  `json:"Back"`

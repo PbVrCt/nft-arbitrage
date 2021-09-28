@@ -1,31 +1,19 @@
 import json
 import time
 import random
-import os
-import datetime
-import pathlib
 
-# import urllib3
+# import os
+# import datetime
+# import pathlib
+# from collections import Counter
+
 import requests
 
-from _0_get_data.queries import query, variables, parts
+from queries import query, variables
 
 URL = "https://axieinfinity.com/graphql-server-v2/graphql"
-# urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
-def save_data(data, name):
-    start_date = str(datetime.date.today())
-    # Create the folder if it doens't exist
-    path = pathlib.Path(__file__).resolve().parent / f"../data/{start_date}"
-    path.mkdir(parents=True, exist_ok=True)
-    # Remove data if it already exists
-    if os.path.isfile(f"../data/{start_date}/{name}.json"):
-        os.remove(f"../data/{start_date}/{name}.json")
-    # Save the data
-    with open(f"./data/{start_date}/{name}.json", "w") as f:
-        json.dump(data, f)
-    return
+jsn = []
 
 
 def get_data(
@@ -40,10 +28,9 @@ def get_data(
     morale=None,
     sort="Latest",
 ):
-    jsn = []
     empty_request_streak = 0
     print(f"\nQuerying by: {part}, {classs},{breedCount},{pureness}")
-    for i in range(0000, 2500, 100):
+    for i in range(0000, 200, 100):
         request = requests.post(
             URL,
             json={
@@ -61,7 +48,6 @@ def get_data(
                     sort=sort,
                 ),
             },
-            # verify=False,
         )
         try:
             assert request.status_code == 200
@@ -136,14 +122,12 @@ def get_data(
                 len(jsn_data),
             )
         time.sleep(random.lognormvariate(0.7, 0.5))
-    save_data(data=jsn, name=name)
     return
 
 
 # Mech : Beast + Bug
 # Dawn : Aquatic + Bird
 # Dusk : Reptile + Plant
-start = time.time()
 for classs in [
     "Aquatic",
     "Beast",
@@ -156,34 +140,8 @@ for classs in [
     "Dusk",
 ]:
     get_data(name=str(classs), classs=classs)
-end = time.time()
-print("Time elapsed collecting data: ", end - start, "s\n")
+return jsn  # give name based on date
 
-
-# for breedCount in [0, 1, 2, 3, 4, 5, 6]:
-#     for pureness in [2, 3, 4, 5, 6]:
-#         for part in parts[0:131]:
-#             get_data(
-#                 name=str(breedCount) + str(pureness) + str(part),
-#                 part=part,
-#                 breedCount=breedCount,
-#                 pureness=pureness,
-#             )
-
-# for classs in ["Mech"]:
-#     for part in parts[21:43]:
-#         get_data(name=str(part) + str(classs), classs=classs, part=part)
-#     for part in parts[66:87]:
-#         get_data(name=str(part) + str(classs), classs=classs, part=part)
-
-# for classs in ["Dawn"]:
-#     for part in parts[44:65]:
-#         get_data(name=str(part) + str(classs), classs=classs, part=part)
-#     for part in parts[0:21]:
-#         get_data(name=str(part) + str(classs), classs=classs, part=part)
-
-# for classs in ["Dusk"]:
-#     for part in parts[88:109]:
-#         get_data(name=str(part) + str(classs), classs=classs, part=part)
-#     for part in parts[110:131]:
-#         get_data(name=str(part) + str(classs), classs=classs, part=part)
+# TODO:
+# Option 1: Upload to s3 through the aws console
+# Option 2: Switch from lambda to an ECS instance

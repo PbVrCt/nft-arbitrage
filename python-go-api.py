@@ -48,7 +48,12 @@ class NewR(Resource):
         )  # predictions
         df = (
             pd.concat(
-                [basic_info, price_predictions, df[["Hp", "Sp", "Sk", "Mr"]]], axis=1
+                [
+                    basic_info,
+                    price_predictions,
+                    df[["Hp", "Sp", "Sk", "Mr", "BreedCount"]],
+                ],
+                axis=1,
             )
             .rename({0: "Prediction"}, axis=1)
             .reset_index()

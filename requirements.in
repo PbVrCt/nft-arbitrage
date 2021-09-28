@@ -1,12 +1,12 @@
 # requirements.in
 # discord
 # aiohttp
+# urllib3
 requests
 pandas
 ipykernel
 boto3
 python-dotenv
-urllib3
 scikit-learn
 keras_tuner
 tensorflow

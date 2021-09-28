@@ -9,7 +9,7 @@ import (
 func notify_discord(nft AxieInfoEngineered) {
 	session, _ := discordgo.New()
 	embed := &discordgo.MessageEmbed{
-		Title:       "Compra",
+		Title:       fmt.Sprint("ID: ", nft.Id),
 		URL:         fmt.Sprint("https://marketplace.axieinfinity.com/axie/", nft.Id),
 		Author:      &discordgo.MessageEmbedAuthor{},
 		Color:       0x00ff00, // Green
@@ -23,6 +23,11 @@ func notify_discord(nft AxieInfoEngineered) {
 			{
 				Name:   "Stats",
 				Value:  fmt.Sprint("Hp: ", nft.Hp, "\nSpeed: ", nft.Speed, "\nSkill: ", nft.Skill, "\nMorale: ", nft.Morale),
+				Inline: true,
+			},
+			{
+				Name:   "BreedCount",
+				Value:  fmt.Sprint(nft.BreedCount),
 				Inline: true,
 			},
 		},
