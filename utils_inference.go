@@ -128,7 +128,9 @@ func ExtractAxieInfo(ax Axie) AxieInfo {
 	axie.Id, _ = strconv.Atoi(ax.Id)
 	axie.Class = ax.Class
 	axie.Image = ax.Image
-	axie.Price, _ = strconv.ParseFloat(ax.Auction.CurrentPriceUSD, 32)
+	price, _ := strconv.ParseFloat(ax.Auction.CurrentPrice, 32)
+	axie.PriceBy100 = price * 1e-16
+	axie.PriceUSD, _ = strconv.ParseFloat(ax.Auction.CurrentPriceUSD, 32)
 	axie.BreedCount = ax.BreedCount
 	axie.Eyes = ax.Parts[0].Name
 	axie.Ears = ax.Parts[1].Name
@@ -149,7 +151,8 @@ type AxieInfo struct {
 	Id         int
 	Class      string
 	Image      string
-	Price      float64
+	PriceBy100 float64
+	PriceUSD   float64
 	BreedCount int
 	Eyes       string
 	Ears       string
@@ -170,7 +173,8 @@ type AxieInfoEngineered struct {
 	Id         int     `json:"Id"`
 	Class      string  `json:"Class"`
 	Image      string  `json:"Image"`
-	Price      float64 `json:"Price"`
+	PriceUSD   float64 `json:"PriceUSD"`
+	PriceBy100 float64 `json:"PriceBy100"`
 	Prediction float64 `json:"Prediction"`
 	BreedCount int     `json:"BreedCount"`
 	Eyes       string  `json:"Eyes"`
@@ -179,10 +183,10 @@ type AxieInfoEngineered struct {
 	Mouth      string  `json:"Mouth"`
 	Horn       string  `json:"Horn"`
 	Tail       string  `json:"Tail"`
-	Hp         int     `json:"Hp"`
-	Speed      int     `json:"Sp"`
-	Skill      int     `json:"Sk"`
-	Morale     int     `json:"Mr"`
+	Hp         float64 `json:"Hp"`
+	Speed      float64 `json:"Sp"`
+	Skill      float64 `json:"Sk"`
+	Morale     float64 `json:"Mr"`
 }
 
 // var mouth_to_card = map[string]string{

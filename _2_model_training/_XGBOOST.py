@@ -13,15 +13,17 @@ from _2_model_training.reduce_mem_usage import reduce_mem_usage
 
 df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
 df = reduce_mem_usage(df)
-features = df.iloc[:-3000].loc[:, df.columns != "Price"].to_numpy()
-labels = df.iloc[:-3000].loc[:, "Price"].to_numpy()
-test_features = df.iloc[-3000:].loc[:, df.columns != "Price"].to_numpy()
-test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
+features = df.iloc[:-3000].loc[:, df.columns != ["Priceby100", "PriceUSD"]].to_numpy()
+labels = df.iloc[:-3000].loc[:, "PriceUSD"].to_numpy()
+test_features = (
+    df.iloc[-3000:].loc[:, df.columns != ["Priceby100", "PriceUSD"]].to_numpy()
+)
+test_labels = df.iloc[-3000:].loc[:, "PriceUSD"].to_numpy()
 
 # Define the model: Random Forest
 class XGBOOST(kt.HyperModel):  # TODO: change the names to GBM
     def build(self, hp):
-        model_type = hp.Choice("model_type", ["random_forest", "xgboost"])
+        model_type = hp.Choice("model_type", ["xgboost", "random_forest"])
         n_estimators = hp.Int("n_estimators", 10, 200)
         max_depth = hp.Int("max_depth", 3, 20)
         max_samples = hp.Float("max_samples", min_value=0.4, max_value=0.99)
@@ -39,7 +41,7 @@ class XGBOOST(kt.HyperModel):  # TODO: change the names to GBM
         else:
             with hp.conditional_scope("model_type", "xgboost"):
                 learning_rate = hp.Float(
-                    "learning_rate", min_value=0.001, max_value=0.2
+                    "learning_rate", min_value=0.001, max_value=0.12
                 )
                 model = ensemble.GradientBoostingRegressor(
                     n_estimators=n_estimators,
@@ -57,7 +59,7 @@ tuner = kt.tuners.SklearnTuner(
     oracle=kt.oracles.BayesianOptimizationOracle(
         # Keras docs: "Note that for this Tuner, the objective for the Oracle should always be set to Objective('score', direction='max')"
         objective=kt.Objective("score", "max"),
-        max_trials=30,
+        max_trials=10,
     ),
     hypermodel=hypermodel,
     scoring=metrics.make_scorer(

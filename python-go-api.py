@@ -12,11 +12,14 @@ with open("./_2_model_training/_XGBOOST.pkl", "rb") as f:  # XGBOOST,lightGBM,KN
 # One hot encoder for the axie class
 with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
     oh_enc = pickle.load(f)
+# One hot encoder for the axie class
+with open("./_1_preprocessing/scaler.pkl", "rb") as f:
+    scaler = pickle.load(f)
 # Card and combo scores
-with open("./_1_preprocessing/scores_lookup.txt") as f:
+with open("./_1_preprocessing/combo_scores.txt") as f:
     for i in f.readlines():
-        scores_lookup = i
-scores_lookup = eval(scores_lookup)
+        combo_scores = i
+combo_scores = eval(combo_scores)
 
 app = Flask(__name__, static_url_path="", static_folder="dist")
 api = Api(app)
@@ -38,11 +41,14 @@ class NewR(Resource):
                 "Horn",
                 "Tail",
                 "Image",
-                "Price",
+                "PriceBy100",
+                "PriceUSD",
             ],
         ]
-        df = df.drop(["Image", "Price"], axis=1)
-        df = score_df(df, scores_lookup, class_encoder=oh_enc)  # feature engineering
+        df = df.drop(["Image", "PriceBy100", "PriceUSD"], axis=1)
+        df = score_df(
+            df, combo_scores, class_encoder=oh_enc, scaler=scaler
+        )  # feature engineering
         price_predictions = df.apply(
             lambda row: model.predict(row.values.reshape(1, -1))[0], axis=1
         )  # predictions

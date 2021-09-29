@@ -4,7 +4,7 @@ import pickle
 import pandas as pd
 
 from _1_preprocessing.feature_eng_utils import (
-    generate_frecuency_scores_lookup,
+    generate_combo_scores,
     fit_one_hot_encoder,
     score_df,
 )
@@ -20,20 +20,20 @@ fit_one_hot_encoder(df)
 with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
     oh_enc = pickle.load(f)
 
-# Calculate card and combo scores
-scores_lookup = generate_frecuency_scores_lookup(leaderboard)
-with open("./_1_preprocessing/scores_lookup.txt", "w") as f:
-    f.write(str(scores_lookup))
+# Calculate combo scores
+combo_scores = generate_combo_scores(leaderboard)
+with open("./_1_preprocessing/combo_scores.txt", "w") as f:
+    f.write(str(combo_scores))
 
-# Check if the feature engineering is done fast enough for real time inference
+# # Check if the feature engineering is done fast enough for real time inference
 # start = time.time()
-# row = score_df(df.iloc[-100:], scores_lookup, oh_enc)
+# row = score_df(df.iloc[-100:, :], combo_scores, oh_enc, fit_scaler=True)
 # end = time.time()
 # print("Time elapsed in feature engineering 100 nft: ", end - start, "s")
-# print(row)
+# print(row.head(), "\n\n")
 
 # Do the feature engineering on the data and save it
-df = score_df(df, scores_lookup, oh_enc, disable_progress_bar=False)
+df = score_df(df, combo_scores, oh_enc, fit_scaler=True)
 print(df.head())
 df.to_csv(f"./data/full_engineered.csv")
 print("\nSaved")

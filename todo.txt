@@ -1,10 +1,14 @@
-# Automatize the data collection. Use ElasticContainerService
+# Finish adding nft attributes as features
+# Make a function that retrieves older prices for a given nft configuration
+# Check that using proxies works in inference.go. Call the function that retrieves older prices through proxies
+# Figure out if able to scan not recently listed nfts. Use postman to explore possible queries
 
-# Feature engineer card stats: Attack, Shield, Energy, Debuff
-# Tain a NN
+# Automatize the data collection. Use aws ElasticContainerService
+# Collect data with Eth prices -> Use Eth prices as training labels -> Adapt buy Conditions and Discord Notifications
 
-# Move the training to sagemaker ?
-# Check that using proxies works in inference.go
-# Make a revenue dashboard using streamlit. Serve through aws?
-# See if rmse achieves better predictions
-# Move the inference to kinesis and lambda? In that case check the record weights in kinesis
+# Play around with the features and hyperparameters
+# Train a NN
+
+# Move the training to sagemaker?
+# Make a revenue dashboard using streamlit? Serve through aws?
+# Move the inference to kinesis? In that case check the record weights in kinesis

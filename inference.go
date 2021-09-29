@@ -60,7 +60,7 @@ func predict_on_batches() {
 			batch_results := feature_engineer_and_predict(batch, api_client) // Takes 0.5s/batch. Keep an eye on the Python server for concurrent requests causing problems
 			bargain_counter := 0
 			for _, nft := range batch_results {
-				if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.Price+200 && nft.Price > 50 {
+				if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.PriceUSD+200 && nft.PriceUSD > 50 {
 					bargains[nft.Id] = true
 					bargain_counter++
 					go notify_discord(nft)
@@ -154,7 +154,7 @@ func get_data_batch(from int, external_api_client *http.Client) {
 		fmt.Printf("Error. Empty responses from the market api\n")
 		return
 	}
-	if cap(batch) < 132 {
+	if cap(batch) < 128 {
 		fmt.Printf("Response from the market api doesn't have the adeaquate length\n")
 		return
 	}

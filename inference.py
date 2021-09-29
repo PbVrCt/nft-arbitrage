@@ -168,10 +168,10 @@ with open("./_2_model_training/_XGBOOST.pkl", "rb") as f:  # XGBOOST,lightGBM,KN
 with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
     oh_enc = pickle.load(f)
 # Card and combo scores
-with open("./_1_preprocessing/scores_lookup.txt") as f:
+with open("./_1_preprocessing/combo_scores.txt") as f:
     for i in f.readlines():
-        scores_lookup = i
-scores_lookup = eval(scores_lookup)
+        combo_scores = i
+combo_scores = eval(combo_scores)
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 TIMEOUT = 25
@@ -240,7 +240,7 @@ try:
                             )
                         except:
                             not_parsed_axies += 1
-                axie_values = score_df(info_batch, scores_lookup, class_encoder=oh_enc)
+                axie_values = score_df(info_batch, combo_scores, class_encoder=oh_enc)
                 price_predictions = axie_values.apply(
                     lambda row: model.predict(row.values.reshape(1, -1))[0], axis=1
                 )

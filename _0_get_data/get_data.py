@@ -43,7 +43,7 @@ def get_data(
     jsn = []
     empty_request_streak = 0
     print(f"\nQuerying by: {part}, {classs},{breedCount},{pureness}")
-    for i in range(0000, 2500, 100):
+    for i in range(0000, 200, 100):
         request = requests.post(
             URL,
             json={
@@ -91,7 +91,8 @@ def get_data(
                     try:
                         id_ = ax["id"]
                         class_ = ax["class"]
-                        price = ax["auction"]["currentPriceUSD"]
+                        price = ax["auction"]["currentPrice"]
+                        priceUSD = ax["auction"]["currentPriceUSD"]
                         breedCount = ax["breedCount"]
                         eyes = ax["parts"][0]["name"]
                         ears = ax["parts"][1]["name"]
@@ -125,7 +126,8 @@ def get_data(
                                 "MouthType": mouth_type,
                                 "HornType": horn_type,
                                 "TailType": tail_type,
-                                "Price": price,
+                                "PriceBy100": float(price) * 1e-16,
+                                "PriceUSD": float(priceUSD),
                             }
                         )
             print(

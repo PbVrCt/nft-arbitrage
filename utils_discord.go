@@ -13,7 +13,7 @@ func notify_discord(nft AxieInfoEngineered) {
 		URL:         fmt.Sprint("https://marketplace.axieinfinity.com/axie/", nft.Id),
 		Author:      &discordgo.MessageEmbedAuthor{},
 		Color:       0x00ff00, // Green
-		Description: "Precio:" + fmt.Sprintf("%.0f", nft.Price) + "\nPredicción:" + fmt.Sprintf("%.0f", nft.Prediction),
+		Description: "Precio:" + fmt.Sprintf("%.0f", nft.PriceUSD) + "\nPredicción:" + fmt.Sprintf("%.0f", nft.Prediction) + "\nEth: " + fmt.Sprintf("%.3f", nft.PriceBy100*0.01),
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   nft.Class,
