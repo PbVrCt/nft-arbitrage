@@ -1,11 +1,15 @@
-# Finish adding nft attributes as features
-# Make a function that retrieves older prices for a given nft configuration
-# Check that using proxies works in inference.go. Call the function that retrieves older prices through proxies
-# Figure out if able to scan not recently listed nfts. Use postman to explore possible queries
+# Get acurrate price. Use a folder for experimenting with isolated functions. Reverse engineer axie tech
 
-# Automatize the data collection. Use aws ElasticContainerService
+# Add concurrency adecuately, probs with more channels. Avoid cases of processing the same nft twice
+
+# Check that using proxies works in inference.go. Call the function that retrieves older prices through proxies
+
+# Do the data collection in go (cheaper to run on cloud)
+# Get data collection into a container -> Upload to aws ElasticContainerService
 # Collect data with Eth prices -> Use Eth prices as training labels -> Adapt buy Conditions and Discord Notifications
 
+# Figure out if able to scan not recently listed nfts. Use postman to explore possible queries
+# Investigate graph based machine learning
 # Play around with the features and hyperparameters
 # Train a NN
 

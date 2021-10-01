@@ -13,12 +13,18 @@ from _2_model_training.reduce_mem_usage import reduce_mem_usage
 
 df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
 df = reduce_mem_usage(df)
-features = df.iloc[:-3000].loc[:, df.columns != ["Priceby100", "PriceUSD"]].to_numpy()
-labels = df.iloc[:-3000].loc[:, "PriceUSD"].to_numpy()
-test_features = (
-    df.iloc[-3000:].loc[:, df.columns != ["Priceby100", "PriceUSD"]].to_numpy()
+features = (
+    df.iloc[:-3000]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .to_numpy()
 )
-test_labels = df.iloc[-3000:].loc[:, "PriceUSD"].to_numpy()
+labels = df.iloc[:-3000].loc[:, "Price"].to_numpy()
+test_features = (
+    df.iloc[-3000:]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .to_numpy()
+)
+test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 
 # Define the model: Random Forest
 class XGBOOST(kt.HyperModel):  # TODO: change the names to GBM

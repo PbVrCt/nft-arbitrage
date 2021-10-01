@@ -7,7 +7,7 @@ import importlib
 # importlib.import_module("_1_preprocessing._0_merge_data")
 # importlib.import_module("_1_preprocessing._1_run_data_tests")
 # importlib.import_module("_1_preprocessing._2_cleansing")
-importlib.import_module("_1_preprocessing._3_feature_engineering")
+# importlib.import_module("_1_preprocessing._3_feature_engineering")
 
 importlib.import_module("_2_model_training._XGBOOST")
 # importlib.import_module("_2_model_training._lightGBM")

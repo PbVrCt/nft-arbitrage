@@ -2,12 +2,27 @@ package main
 
 import (
 	"fmt"
+	"sort"
+	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-func notify_discord(nft AxieInfoEngineered) {
+func notify_discord(nft AxieInfoEngineered, old_prices []OldPrice) {
 	session, _ := discordgo.New()
+
+	var prices []string
+	var dates []string
+	var timestamps []time.Time
+	for _, p := range old_prices {
+		prices = append(prices, fmt.Sprintf("%.3f", p.Price))
+		dates = append(dates, p.Date)
+		timestamps = append(timestamps, p.Timestamp)
+	}
+	price_history := PriceHistorySlices{prices: prices, dates: dates, timestamps: timestamps}
+	sort.Sort(SortByTimestamp(price_history))
+
 	embed := &discordgo.MessageEmbed{
 		Title:       fmt.Sprint("ID: ", nft.Id),
 		URL:         fmt.Sprint("https://marketplace.axieinfinity.com/axie/", nft.Id),
@@ -22,12 +37,22 @@ func notify_discord(nft AxieInfoEngineered) {
 			},
 			{
 				Name:   "Stats",
-				Value:  fmt.Sprint("Hp: ", nft.Hp, "\nSpeed: ", nft.Speed, "\nSkill: ", nft.Skill, "\nMorale: ", nft.Morale),
+				Value:  fmt.Sprint("Hp: ", fmt.Sprintf("%.2f", nft.Hp), "\nSpeed: ", fmt.Sprintf("%.2f", nft.Speed), "\nSkill: ", fmt.Sprintf("%.2f", nft.Skill), "\nMorale: ", fmt.Sprintf("%.2f", nft.Morale)),
 				Inline: true,
 			},
 			{
 				Name:   "BreedCount",
 				Value:  fmt.Sprint(nft.BreedCount),
+				Inline: true,
+			},
+			{
+				Name:   "Precios previos",
+				Value:  fmt.Sprintln(strings.Join(price_history.prices, "\n")),
+				Inline: true,
+			},
+			{
+				Name:   "Fechas",
+				Value:  fmt.Sprintln(strings.Join(price_history.dates, "\n")),
 				Inline: true,
 			},
 		},
@@ -50,4 +75,26 @@ func notify_discord(nft AxieInfoEngineered) {
 		fmt.Println("Webhook error:")
 		fmt.Println(err)
 	}
+}
+
+type PriceHistorySlices struct {
+	prices     []string
+	dates      []string
+	timestamps []time.Time
+}
+
+type SortByTimestamp PriceHistorySlices
+
+func (sbo SortByTimestamp) Len() int {
+	return len(sbo.prices)
+}
+
+func (sbo SortByTimestamp) Swap(i, j int) {
+	sbo.prices[i], sbo.prices[j] = sbo.prices[j], sbo.prices[i]
+	sbo.dates[i], sbo.dates[j] = sbo.dates[j], sbo.dates[i]
+	sbo.timestamps[i], sbo.timestamps[j] = sbo.timestamps[j], sbo.timestamps[i]
+}
+
+func (sbo SortByTimestamp) Less(i, j int) bool {
+	return sbo.timestamps[i].After(sbo.timestamps[j])
 }

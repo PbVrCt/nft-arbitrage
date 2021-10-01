@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
+	"time"
 )
 
 // POST REQUESTS
@@ -10,10 +12,9 @@ func CreateBody(from int) RequestBody {
 	body.Query = query
 	body.Variables.From = from
 	body.Variables.Size = 100
-	body.Variables.Sort = "Latest"
+	var sorting string = "Latest"
+	body.Variables.Sort = &sorting
 	body.Variables.AuctionType = "Sale"
-	// var BreedCount int = 0
-	// body.Variables.Criteria.BreedCount = &BreedCount
 	var Stages int = 4
 	body.Variables.Criteria.Stages = &Stages
 	return body
@@ -55,7 +56,7 @@ type RequestBody struct {
 type Variables struct {
 	From        int      `json:"from"`
 	Size        int      `json:"size"`
-	Sort        string   `json:"sort"`
+	Sort        *string  `json:"sort"`
 	AuctionType string   `json:"auctionType"`
 	Owner       *string  `json:"owner"`
 	Criteria    Criteria `json:"criteria"`
@@ -70,7 +71,7 @@ type Criteria struct {
 	Pureness   *int      `json:"pureness"`
 	Title      *string   `json:"title"`
 	Breedable  *bool     `json:"breedable"`
-	BreedCount *int      `json:"breedCount"`
+	BreedCount *[]int    `json:"breedCount"`
 	Hp         *int      `json:"hp"`
 	Skill      *int      `json:"skill"`
 	Speed      *int      `json:"speed"`
@@ -108,8 +109,7 @@ type Part struct {
 	SpecialGenes *string `json:"specialGenes,omitempty"`
 }
 
-// FORMAT RESPONSES FROM THE EXTERNAL API
-// type MyError struct{}
+// FORMAT RESPONSES
 
 func ExtractBatchInfo(blob JsonBlob) ([]AxieInfo, bool) {
 	var Axies []AxieInfo
@@ -189,19 +189,154 @@ type AxieInfoEngineered struct {
 	Morale     float64 `json:"Mr"`
 }
 
-// var mouth_to_card = map[string]string{
-// 	"part1": "card1",
-// 	"part2": "card2",
+// POST REQUESTS IDENTICAL NFTS
+
+func CreateBodyIdenticalNfts(nft AxieInfoEngineered) RequestBody {
+	body := RequestBody{}
+	body.Query = query
+	body.Variables.From = 0
+	body.Variables.Size = 10
+	body.Variables.AuctionType = "All"
+	var parts = []string{nft.Back, nft.Mouth, nft.Horn, nft.Tail}
+	body.Variables.Criteria.Parts = &parts
+	var classes = []string{nft.Class}
+	body.Variables.Criteria.Classes = &classes
+	return body
+}
+
+// FORMAT RESPONSES IDENTICAL NFTS
+
+func ExtractBatchIds(blob JsonBlob) ([]int, bool) {
+	var ids []int
+	if blob.Data.Axies.Results == nil {
+		return ids, true
+	}
+	for _, axie := range blob.Data.Axies.Results {
+		// axie_info := ExtractAxieId(axie)
+		id, _ := strconv.Atoi(axie.Id)
+		ids = append(ids, id)
+	}
+	return ids, false
+}
+
+// func ExtractBatchIds(blob JsonBlob) ([]AxieId, bool) {
+// 	var Axies []AxieId
+// 	if blob.Data.Axies.Results == nil {
+// 		return Axies, true
+// 	}
+// 	for _, axie := range blob.Data.Axies.Results {
+// 		axie_info := ExtractAxieId(axie)
+// 		Axies = append(Axies, axie_info)
+// 	}
+// 	return Axies, false
 // }
-// var back_to_card = map[string]string{
-// 	"part1": "card1",
-// 	"part2": "card2",
+
+// func ExtractAxieId(ax Axie) AxieId {
+// 	var axieId AxieId
+// 	axieId.Id, _ = strconv.Atoi(ax.Id)
+// 	return axieId
 // }
-// var horn_to_card = map[string]string{
-// 	"part1": "card1",
-// 	"part2": "card2",
+
+// type AxieId struct {
+// 	Id int
 // }
-// var tail_to_card = map[string]string{
-// 	"part1": "card1",
-// 	"part2": "card2",
-// }
+
+// POST REQUESTS TRANSFER HISTORY
+
+func CreateBodyTransferHistory(id int) RequestBodyTransferHistory {
+	body := RequestBodyTransferHistory{}
+	body.Query = query_transfer_history
+	body.Variables.AxieId = id
+	body.Variables.From = 0
+	body.Variables.Size = 10
+	return body
+}
+
+var query_transfer_history string = `
+query GetAxieTransferHistory($axieId: ID!, $from: Int!, $size: Int!) {
+	axie(axieId: $axieId) {
+		id
+		transferHistory(from: $from, size: $size) {
+		...TransferRecords
+		}
+	}
+	}
+	
+	fragment TransferRecords on TransferRecords {
+	total
+	results {
+		from
+		to
+		timestamp
+		txHash
+		withPrice
+	}
+	}
+`
+
+type RequestBodyTransferHistory struct {
+	Query     string                   `json:"query"`
+	Variables VariablesTransferHistory `json:"variables"`
+}
+type VariablesTransferHistory struct {
+	AxieId int `json:"axieId"`
+	From   int `json:"from"`
+	Size   int `json:"size"`
+}
+
+// RAW RESPONSES TRANSFER HISTORY
+
+type JsonBlobTransferHistory struct {
+	Data struct {
+		Axie struct {
+			Id              string          `json:"id"`
+			TransferHistory TransferHistory `json:"transferHistory"`
+		} `json:"axie"`
+	} `json:"data"`
+}
+type TransferHistory struct {
+	Total   int      `json:"total"`
+	Results []Result `json:"results"`
+}
+type Result struct {
+	From      string `json:"from"`
+	To        string `json:"to"`
+	Timestamp int    `json:"timestamp"`
+	TxHash    string `json:"txHash"`
+	WithPrice string `json:"withPrice"`
+}
+
+// FORMAT RESPONSES TRANSFER HISTORY
+
+func ExtractBatchTransferHistory(blob JsonBlobTransferHistory) ([]OldPrice, bool) {
+	var Prices []OldPrice
+	if blob.Data.Axie.TransferHistory.Total == 0 {
+		fmt.Printf("0 identical axies\n")
+		return Prices, false
+	}
+	if blob.Data.Axie.TransferHistory.Results == nil {
+		return Prices, true
+	}
+	for _, result := range blob.Data.Axie.TransferHistory.Results {
+		price := ExtractTransferHistory(result)
+		Prices = append(Prices, price)
+	}
+	return Prices, false
+}
+
+func ExtractTransferHistory(result Result) OldPrice {
+	var price OldPrice
+	price_value, _ := strconv.ParseFloat(result.WithPrice, 64)
+	unix := time.Unix(int64(result.Timestamp), 0)
+	date := strconv.FormatInt(int64(unix.Day()), 10) + "/" + strconv.FormatInt(int64((unix.Month()+1)), 10) + "/" + strconv.FormatInt(int64(unix.Year()), 10)
+	price.Price = price_value * 1e-18
+	price.Timestamp = unix
+	price.Date = date
+	return price
+}
+
+type OldPrice struct {
+	Price     float64
+	Timestamp time.Time
+	Date      string
+}

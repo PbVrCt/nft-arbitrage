@@ -96,12 +96,12 @@ def assign_stats(row):
 
 def assign_attributes(row, i):
     score = 0
-    # try:
-    for column in ["Mouth", "Back", "Horn", "Tail"]:
-        score += card_attributes[row[column][i]]
-    return score
-    # except KeyError:
-    #     return 0
+    try:
+        for column in ["Mouth", "Back", "Horn", "Tail"]:
+            score += card_attributes[row[column]][i]
+        return score
+    except KeyError:
+        return 0
 
 
 def fit_one_hot_encoder(df):
