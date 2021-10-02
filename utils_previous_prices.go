@@ -7,31 +7,31 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"sort"
 	"time"
 )
 
-func get_price_history(nft AxieInfoEngineered) (bool, []OldPrice) {
-	ids := GetIdsIdentifcalNfts(nft)
+func get_current_listings(nft AxieInfoEngineered) ([]float64, float64) {
+	data := PostRequestIdentifcalNfts(nft, true)
+	prices := GetPricesIdenticalNfts(data)
+	sort.Float64s(prices)
+	if len(prices) > 1 {
+		return prices, prices[1]
+	} else {
+		return prices, 0.0
+	}
+}
+
+func get_price_history(nft AxieInfoEngineered) []OldPrice {
+	data := PostRequestIdentifcalNfts(nft, false)
+	ids := GetIdsIdenticalNfts(data)
 	var price_history []OldPrice
-	var below_average = false
 	for _, nft_id := range ids {
 		transfer_history_nft := GetTransferHistory(nft_id)
 		price_history = append(price_history, transfer_history_nft...)
-		time.Sleep(time.Duration(rand.Intn(500)+500) * time.Millisecond) // Avoid getting blocked by the api if not using proxies
+		time.Sleep(time.Duration(rand.Intn(500)+500) * time.Millisecond) // To avoid getting blocked by the api if not using proxies
 	}
-	if (nft.PriceBy100)*0.01 < average(price_history) {
-		below_average = true
-	}
-	return below_average, price_history
-}
-
-func average(prices []OldPrice) float64 {
-	total := 0.0
-	for _, price := range prices {
-		total = total + price.Price
-	}
-	average := total / float64(len(prices))
-	return average
+	return price_history
 }
 
 func GetTransferHistory(nft_id int) []OldPrice {
@@ -71,29 +71,39 @@ func GetTransferHistory(nft_id int) []OldPrice {
 	return history
 }
 
-func GetIdsIdentifcalNfts(nft AxieInfoEngineered) []int {
-	var ids []int
-	b, _ := json.Marshal(CreateBodyIdenticalNfts(nft))
+func PostRequestIdentifcalNfts(nft AxieInfoEngineered, sale bool) []byte {
+	b, _ := json.Marshal(CreateBodyIdenticalNfts(nft, sale))
 	request, _ := http.NewRequest("POST", URL, bytes.NewBuffer(b))
 	request.Header.Set("Content-Type", "application/json")
 	response, err := external_api_client.Do(request)
 	if err != nil {
 		fmt.Printf("The HTTP request to the external API failed with error: %s\n", err)
-		return ids
 	}
 	defer response.Body.Close()
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Printf("Error reading the response from the external api: %s\n", err)
-		return ids
 	}
+	return data
+}
+func GetIdsIdenticalNfts(data []byte) []int {
 	var result JsonBlob
-	var bool_err bool
 	json.Unmarshal([]byte(data), &result)
-	ids, bool_err = ExtractBatchIds(result)
+	ids, bool_err := ExtractBatchIds(result)
 	if bool_err {
 		fmt.Printf("Error. Empty responses from the market api\n")
 		return ids
 	}
 	return ids
+}
+
+func GetPricesIdenticalNfts(data []byte) []float64 {
+	var result JsonBlob
+	json.Unmarshal([]byte(data), &result)
+	prices, bool_err := ExtractBatchPrices(result)
+	if bool_err {
+		fmt.Printf("Error. Empty responses from the market api\n")
+		return prices
+	}
+	return prices
 }

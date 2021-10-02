@@ -14,7 +14,7 @@ import (
 var post_queque = make(chan int, 10)             // Input channel
 var responses_queque = make(chan []AxieInfo, 10) // Output channel
 const NTHREADS = 1                               // Number of threads in the worker pool doing requests ; NTHREADS < cap(post_queque)
-const MTHREADS = 10                              // Number of threads in the worker pool calling Python ; MTHREADS < cap(response_queque)
+const MTHREADS = 20                              // Number of threads in the worker pool calling Python ; MTHREADS < cap(response_queque)
 const PAGES_TO_SCAN = 4                          // Each page shows 100 nfts
 var URL string = "https://axieinfinity.com/graphql-server-v2/graphql"
 var bargains = make(map[int]bool)
@@ -41,20 +41,19 @@ func predict_on_batches() {
 			for {
 				batch, ok := <-responses_queque
 				if ok {
-					bargain_counter := 0
-					bargain_below_average_counter := 0
 					batch_results := feature_engineer_and_predict(batch)
 					for _, nft := range batch_results {
-						if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.PriceUSD+200 && nft.PriceUSD > 50 {
+						if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.PriceUSD+250 && nft.PriceUSD > 50 {
 							bargains[nft.Id] = true
-							bargain_counter++
-							if below_average, price_history := get_price_history(nft); below_average { // APPLY CONCURRENCY HERE
-								bargain_below_average_counter++
-								go notify_discord(nft, price_history)
-							}
+							go func() {
+								current_prices, second_lowest := get_current_listings(nft)
+								price_history := get_price_history(nft)
+								if second_lowest > 0.01+(nft.PriceBy100*0.01) {
+									notify_discord(nft, current_prices, price_history)
+								}
+							}()
 						}
 					}
-					fmt.Printf("Bargains: " + fmt.Sprint(bargain_counter) + "/100\n" + "Below average: " + fmt.Sprint(bargain_below_average_counter) + "/100\n")
 				} else {
 					fmt.Printf("Error getting data from go channel")
 				}
@@ -62,26 +61,6 @@ func predict_on_batches() {
 		}()
 	}
 }
-
-// func predict_on_batches() {
-// 	for {
-// 		batch := <-responses_queque
-// 		go func() {
-// 			batch_results := feature_engineer_and_predict(batch) // Takes 0.5s/batch. Keep an eye on the Python server for concurrent requests causing problems
-// 			bargain_counter := 0
-// 			for _, nft := range batch_results {
-// 				if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.PriceUSD+300 && nft.PriceUSD > 50 {
-// 					if below_average, old_prices := get_data_older_prices(nft); below_average { // TODO: Apply concurrency here
-// 						bargains[nft.Id] = true
-// 						bargain_counter++
-// 						go notify_discord(nft, old_prices)
-// 					}
-// 				}
-// 			}
-// 			fmt.Printf("Bargains: " + fmt.Sprint(bargain_counter) + "/100\n")
-// 		}()
-// 	}
-// }
 
 // Sends the data in JSON format to a Python server through a Flask API. Then,
 // the feature engineering, model serving and predictions are done in Python, and the results are returned as a JSON

@@ -12,3 +12,4 @@ test_snippets
 data/*
 Keras_tuner_metadata/*/**
 TensorBoard_logs/
+retrieve_prices_test

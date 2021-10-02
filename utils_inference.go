@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -191,13 +192,26 @@ type AxieInfoEngineered struct {
 
 // POST REQUESTS IDENTICAL NFTS
 
-func CreateBodyIdenticalNfts(nft AxieInfoEngineered) RequestBody {
+func fmtPart(part string, part_category string) string {
+	formatted := strings.ReplaceAll(part, " ", "-")
+	formatted = strings.ToLower(formatted)
+	formatted = part_category + "-" + formatted
+	return formatted
+}
+
+func CreateBodyIdenticalNfts(nft AxieInfoEngineered, sale bool) RequestBody {
 	body := RequestBody{}
 	body.Query = query
 	body.Variables.From = 0
-	body.Variables.Size = 10
-	body.Variables.AuctionType = "All"
-	var parts = []string{nft.Back, nft.Mouth, nft.Horn, nft.Tail}
+	body.Variables.Size = 5
+	if sale {
+		body.Variables.AuctionType = "Sale"
+	} else {
+		body.Variables.AuctionType = "All"
+	}
+	var sorting string = "PriceAsc"
+	body.Variables.Sort = &sorting
+	var parts = []string{fmtPart(nft.Back, "back"), fmtPart(nft.Mouth, "mouth"), fmtPart(nft.Horn, "horn"), fmtPart(nft.Tail, "tail")}
 	body.Variables.Criteria.Parts = &parts
 	var classes = []string{nft.Class}
 	body.Variables.Criteria.Classes = &classes
@@ -212,34 +226,23 @@ func ExtractBatchIds(blob JsonBlob) ([]int, bool) {
 		return ids, true
 	}
 	for _, axie := range blob.Data.Axies.Results {
-		// axie_info := ExtractAxieId(axie)
 		id, _ := strconv.Atoi(axie.Id)
 		ids = append(ids, id)
 	}
 	return ids, false
 }
 
-// func ExtractBatchIds(blob JsonBlob) ([]AxieId, bool) {
-// 	var Axies []AxieId
-// 	if blob.Data.Axies.Results == nil {
-// 		return Axies, true
-// 	}
-// 	for _, axie := range blob.Data.Axies.Results {
-// 		axie_info := ExtractAxieId(axie)
-// 		Axies = append(Axies, axie_info)
-// 	}
-// 	return Axies, false
-// }
-
-// func ExtractAxieId(ax Axie) AxieId {
-// 	var axieId AxieId
-// 	axieId.Id, _ = strconv.Atoi(ax.Id)
-// 	return axieId
-// }
-
-// type AxieId struct {
-// 	Id int
-// }
+func ExtractBatchPrices(blob JsonBlob) ([]float64, bool) {
+	var prices []float64
+	if blob.Data.Axies.Results == nil {
+		return prices, true
+	}
+	for _, axie := range blob.Data.Axies.Results {
+		price, _ := strconv.ParseFloat(axie.Auction.CurrentPrice, 64)
+		prices = append(prices, price*1e-18)
+	}
+	return prices, false
+}
 
 // POST REQUESTS TRANSFER HISTORY
 
@@ -248,7 +251,7 @@ func CreateBodyTransferHistory(id int) RequestBodyTransferHistory {
 	body.Query = query_transfer_history
 	body.Variables.AxieId = id
 	body.Variables.From = 0
-	body.Variables.Size = 10
+	body.Variables.Size = 2
 	return body
 }
 
@@ -328,7 +331,7 @@ func ExtractTransferHistory(result Result) OldPrice {
 	var price OldPrice
 	price_value, _ := strconv.ParseFloat(result.WithPrice, 64)
 	unix := time.Unix(int64(result.Timestamp), 0)
-	date := strconv.FormatInt(int64(unix.Day()), 10) + "/" + strconv.FormatInt(int64((unix.Month()+1)), 10) + "/" + strconv.FormatInt(int64(unix.Year()), 10)
+	date := strconv.FormatInt(int64(unix.Day()), 10) + "/" + strconv.FormatInt(int64((unix.Month())), 10) + "/" + strconv.FormatInt(int64(unix.Year()), 10)
 	price.Price = price_value * 1e-18
 	price.Timestamp = unix
 	price.Date = date

@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func notify_discord(nft AxieInfoEngineered, old_prices []OldPrice) {
+func notify_discord(nft AxieInfoEngineered, current_prices []float64, old_prices []OldPrice) {
 	session, _ := discordgo.New()
 
 	var prices []string
@@ -22,6 +22,12 @@ func notify_discord(nft AxieInfoEngineered, old_prices []OldPrice) {
 	}
 	price_history := PriceHistorySlices{prices: prices, dates: dates, timestamps: timestamps}
 	sort.Sort(SortByTimestamp(price_history))
+
+	var current_pricess []string
+	for _, p := range current_prices {
+		current_pricess = append(current_pricess, fmt.Sprintf("%.3f", p))
+	}
+	sort.Strings(current_pricess)
 
 	embed := &discordgo.MessageEmbed{
 		Title:       fmt.Sprint("ID: ", nft.Id),
@@ -46,7 +52,12 @@ func notify_discord(nft AxieInfoEngineered, old_prices []OldPrice) {
 				Inline: true,
 			},
 			{
-				Name:   "Precios previos",
+				Name:   "Precios",
+				Value:  fmt.Sprintln(strings.Join(current_pricess, "\n")),
+				Inline: true,
+			},
+			{
+				Name:   "Previas compras",
 				Value:  fmt.Sprintln(strings.Join(price_history.prices, "\n")),
 				Inline: true,
 			},
