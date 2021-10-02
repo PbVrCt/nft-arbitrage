@@ -1,13 +1,17 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// POST REQUESTS
+// DEFINE REQUESTS
 func CreateBody(from int) RequestBody {
 	body := RequestBody{}
 	body.Query = query
@@ -79,7 +83,26 @@ type Criteria struct {
 	Morale     *int      `json:"morale"`
 }
 
-// RAW RESPONSES
+// DO REQUESTS
+func PostRequest(body interface{}) []byte {
+	b, _ := json.Marshal(body)
+
+	request, _ := http.NewRequest("POST", URL, bytes.NewBuffer(b))
+	request.Header.Set("Content-Type", "application/json")
+	response, err := external_api_client.Do(request)
+	if err != nil {
+		fmt.Printf("The HTTP request to the external API failed with error: %s\n", err)
+	}
+	defer response.Body.Close()
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("Error reading the response from the external api: %s\n", err)
+	}
+	// fmt.Println(string(data))
+	return data
+}
+
+// RESPONSES FORMAT
 type JsonBlob struct {
 	Data struct {
 		Axies struct {
@@ -110,7 +133,7 @@ type Part struct {
 	SpecialGenes *string `json:"specialGenes,omitempty"`
 }
 
-// FORMAT RESPONSES
+// PARSE RESPONSES
 
 func ExtractBatchInfo(blob JsonBlob) ([]AxieInfo, bool) {
 	var Axies []AxieInfo
@@ -169,7 +192,7 @@ type AxieInfo struct {
 	TailType   string
 }
 
-// FORMAT PREDICTIONS FROM THE PYTHON SERVER
+// RESPONSE FORMAT FROM THE PYTHON SERVER
 type AxieInfoEngineered struct {
 	Id         int     `json:"Id"`
 	Class      string  `json:"Class"`
@@ -190,7 +213,7 @@ type AxieInfoEngineered struct {
 	Morale     float64 `json:"Mr"`
 }
 
-// POST REQUESTS IDENTICAL NFTS
+// DEFINE REQUESTS IDENTICAL NFTS
 
 func fmtPart(part string, part_category string) string {
 	formatted := strings.ReplaceAll(part, " ", "-")
@@ -218,33 +241,37 @@ func CreateBodyIdenticalNfts(nft AxieInfoEngineered, sale bool) RequestBody {
 	return body
 }
 
-// FORMAT RESPONSES IDENTICAL NFTS
+// PARSE RESPONSES IDENTICAL NFTS
 
-func ExtractBatchIds(blob JsonBlob) ([]int, bool) {
-	var ids []int
-	if blob.Data.Axies.Results == nil {
-		return ids, true
+func ParseIdsIdenticalNfts(data []byte) []int {
+	var result JsonBlob
+	json.Unmarshal([]byte(data), &result)
+	if result.Data.Axies.Results == nil {
+		fmt.Printf("Error. Empty responses from the market api\n")
 	}
-	for _, axie := range blob.Data.Axies.Results {
+	var ids []int
+	for _, axie := range result.Data.Axies.Results {
 		id, _ := strconv.Atoi(axie.Id)
 		ids = append(ids, id)
 	}
-	return ids, false
+	return ids
 }
 
-func ExtractBatchPrices(blob JsonBlob) ([]float64, bool) {
-	var prices []float64
-	if blob.Data.Axies.Results == nil {
-		return prices, true
+func ParsePricesIdenticalNfts(data []byte) []float64 {
+	var result JsonBlob
+	json.Unmarshal([]byte(data), &result)
+	if result.Data.Axies.Results == nil {
+		fmt.Printf("Error. Empty responses from the market api\n")
 	}
-	for _, axie := range blob.Data.Axies.Results {
+	var prices []float64
+	for _, axie := range result.Data.Axies.Results {
 		price, _ := strconv.ParseFloat(axie.Auction.CurrentPrice, 64)
 		prices = append(prices, price*1e-18)
 	}
-	return prices, false
+	return prices
 }
 
-// POST REQUESTS TRANSFER HISTORY
+// DEFINE REQUESTS TRANSFER HISTORY
 
 func CreateBodyTransferHistory(id int) RequestBodyTransferHistory {
 	body := RequestBodyTransferHistory{}
@@ -287,7 +314,7 @@ type VariablesTransferHistory struct {
 	Size   int `json:"size"`
 }
 
-// RAW RESPONSES TRANSFER HISTORY
+// RESPONSES FORMAT TRANSFER HISTORY
 
 type JsonBlobTransferHistory struct {
 	Data struct {
@@ -309,22 +336,23 @@ type Result struct {
 	WithPrice string `json:"withPrice"`
 }
 
-// FORMAT RESPONSES TRANSFER HISTORY
+// PARSE RESPONSES TRANSFER HISTORY
 
-func ExtractBatchTransferHistory(blob JsonBlobTransferHistory) ([]OldPrice, bool) {
-	var Prices []OldPrice
-	if blob.Data.Axie.TransferHistory.Total == 0 {
+func ParseTransferHistory(data []byte) []OldPrice {
+	var result JsonBlobTransferHistory
+	json.Unmarshal([]byte(data), &result)
+	if result.Data.Axie.TransferHistory.Total == 0 {
 		fmt.Printf("0 identical axies\n")
-		return Prices, false
 	}
-	if blob.Data.Axie.TransferHistory.Results == nil {
-		return Prices, true
+	if result.Data.Axie.TransferHistory.Results == nil {
+		fmt.Printf("Error. Empty response from the market api\n")
 	}
-	for _, result := range blob.Data.Axie.TransferHistory.Results {
+	var history []OldPrice
+	for _, result := range result.Data.Axie.TransferHistory.Results {
 		price := ExtractTransferHistory(result)
-		Prices = append(Prices, price)
+		history = append(history, price)
 	}
-	return Prices, false
+	return history
 }
 
 func ExtractTransferHistory(result Result) OldPrice {

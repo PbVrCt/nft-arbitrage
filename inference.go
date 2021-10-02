@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"sort"
 	"sync"
 	"time"
 )
@@ -45,13 +46,13 @@ func predict_on_batches() {
 					for _, nft := range batch_results {
 						if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.PriceUSD+250 && nft.PriceUSD > 50 {
 							bargains[nft.Id] = true
-							go func() {
-								current_prices, second_lowest := get_current_listings(nft)
-								price_history := get_price_history(nft)
-								if second_lowest > 0.01+(nft.PriceBy100*0.01) {
-									notify_discord(nft, current_prices, price_history)
-								}
-							}()
+							// go func() {
+							current_prices, second_lowest := get_current_listings(nft)
+							price_history := get_price_history(nft)
+							if second_lowest > 0.01+(nft.PriceBy100*0.01) {
+								go notify_discord(nft, current_prices, price_history)
+							}
+							// }()
 						}
 					}
 				} else {
@@ -83,6 +84,33 @@ func feature_engineer_and_predict(batch []AxieInfo) []AxieInfoEngineered {
 		fmt.Printf("\n%v\n", batch_results[0].Id)
 	}
 	return batch_results
+}
+
+func get_current_listings(nft AxieInfoEngineered) ([]float64, float64) {
+	var body RequestBody = CreateBodyIdenticalNfts(nft, true)
+	data := PostRequest(&body)
+	prices := ParsePricesIdenticalNfts(data)
+	sort.Float64s(prices)
+	if len(prices) > 1 {
+		return prices, prices[1]
+	} else {
+		return prices, 0.0
+	}
+}
+
+func get_price_history(nft AxieInfoEngineered) []OldPrice {
+	var body RequestBody = CreateBodyIdenticalNfts(nft, false)
+	data := PostRequest(&body)
+	ids := ParseIdsIdenticalNfts(data)
+	var price_history []OldPrice
+	for _, nft_id := range ids {
+		var bd RequestBodyTransferHistory = CreateBodyTransferHistory(nft_id)
+		data := PostRequest(&bd)
+		transfer_history_nft := ParseTransferHistory(data)
+		price_history = append(price_history, transfer_history_nft...)
+		time.Sleep(time.Duration(rand.Intn(500)+500) * time.Millisecond) // To avoid getting blocked by the api if not using proxies
+	}
+	return price_history
 }
 
 func get_data() {
@@ -117,20 +145,8 @@ func get_data() {
 
 // Gets data from a single post request to the external API
 func get_data_batch(from int) {
-	b, _ := json.Marshal(CreateBody(from))
-	request, _ := http.NewRequest("POST", URL, bytes.NewBuffer(b))
-	request.Header.Set("Content-Type", "application/json")
-	response, err := external_api_client.Do(request)
-	if err != nil {
-		fmt.Printf("The HTTP request to the external API failed with error: %s\n", err)
-		return
-	}
-	defer response.Body.Close()
-	data, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		fmt.Printf("Error reading the response from the external api: %s\n", err)
-		return
-	}
+	var body RequestBody = CreateBody(from)
+	data := PostRequest(&body)
 	var result JsonBlob
 	var batch []AxieInfo
 	var bool_err bool
