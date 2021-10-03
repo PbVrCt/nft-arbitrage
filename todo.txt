@@ -1,6 +1,5 @@
-# Create some kind of cache to avoid processing the same nft twice
-# Retrieve only the lowest priced previous sales
-# Check that using proxies works in inference.go. Call the function that retrieves older prices through proxies
+# Check that using proxies works in inference.go
+# Test hyperparam configs
 # Figure out how to pack go scripts into packages and make go code more neat
 
 # Do the data collection in go (cheaper to run on cloud)

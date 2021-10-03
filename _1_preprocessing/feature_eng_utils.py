@@ -112,9 +112,8 @@ def fit_one_hot_encoder(df):
         pickle.dump(enc, f)
 
 
-def fit_save_scaler(df):
-    columns = ["Hp", "Sp", "Sk", "Mr", "card_score"]
-    scaler = MinMaxScaler().fit(df.loc[:, columns].to_numpy())
+def fit_save_scaler(df, columns_to_fit):
+    scaler = MinMaxScaler().fit(df.loc[:, columns_to_fit].to_numpy())
     with open("./_1_preprocessing/scaler.pickle", "wb") as f:
         pickle.dump(scaler, f)
 
@@ -137,25 +136,26 @@ def score_df(df, scores_lookup, class_encoder, scaler=False, fit_scaler=False):
         lambda df: assign_combo_score(df, scores_lookup, build), axis=1
     )
 
-    df.loc[:, "stats"] = df.apply(assign_stats, axis=1)
-    df[["Hp", "Sp", "Sk", "Mr"]] = pd.DataFrame(df.stats.tolist(), index=df.index)
-    df.drop("stats", axis=1, inplace=True)
+    # df.loc[:, "stats"] = df.apply(assign_stats, axis=1)
+    # df[["Hp", "Sp", "Sk", "Mr"]] = pd.DataFrame(df.stats.tolist(), index=df.index)
+    # df.drop("stats", axis=1, inplace=True)
 
-    df.loc[:, "Attack"] = df.apply(lambda df: assign_attributes(df, 0), axis=1)
-    df.loc[:, "Shield"] = df.apply(lambda df: assign_attributes(df, 1), axis=1)
-    df.loc[:, "EnergyCost"] = df.apply(lambda df: assign_attributes(df, 2), axis=1)
-    df.loc[:, "Stunt"] = df.apply(lambda df: assign_attributes(df, 3), axis=1)
-    df.loc[:, "Poison"] = df.apply(lambda df: assign_attributes(df, 4), axis=1)
-    df.loc[:, "DmgCombo"] = df.apply(lambda df: assign_attributes(df, 5), axis=1)
-    df.loc[:, "Targetting"] = df.apply(lambda df: assign_attributes(df, 6), axis=1)
-    df.loc[:, "EnergyGain"] = df.apply(lambda df: assign_attributes(df, 7), axis=1)
-    df.loc[:, "Buffs/Debuffs"] = df.apply(lambda df: assign_attributes(df, 8), axis=1)
-    df.loc[:, "CardDraw/Discard"] = df.apply(
-        lambda df: assign_attributes(df, 9), axis=1
-    )
-    df.loc[:, "Healing/Shielding"] = df.apply(
-        lambda df: assign_attributes(df, 10), axis=1
-    )
+    # df.loc[:, "Attack"] = df.apply(lambda df: assign_attributes(df, 0), axis=1)
+    # df.loc[:, "Shield"] = df.apply(lambda df: assign_attributes(df, 1), axis=1)
+    # df.loc[:, "EnergyCost"] = df.apply(lambda df: assign_attributes(df, 2), axis=1)
+    # df.loc[:, "Stunt"] = df.apply(lambda df: assign_attributes(df, 3), axis=1)
+    # df.loc[:, "Poison"] = df.apply(lambda df: assign_attributes(df, 4), axis=1)
+    # df.loc[:, "DmgCombo"] = df.apply(lambda df: assign_attributes(df, 5), axis=1)
+    # df.loc[:, "Targetting"] = df.apply(lambda df: assign_attributes(df, 6), axis=1)
+    # df.loc[:, "EnergyGain"] = df.apply(lambda df: assign_attributes(df, 7), axis=1)
+    # df.loc[:, "Buffs/Debuffs"] = df.apply(lambda df: assign_attributes(df, 8), axis=1)
+    # df.loc[:, "CardDraw/Discard"] = df.apply(
+    #     lambda df: assign_attributes(df, 9), axis=1
+    # )
+    # df.loc[:, "Healing/Shielding"] = df.apply(
+    #     lambda df: assign_attributes(df, 10), axis=1
+    # )
+
     # Feature selection
     df.drop(combos, axis=1, inplace=True)
     df.drop(tricombos, axis=1, inplace=True)
@@ -174,10 +174,11 @@ def score_df(df, scores_lookup, class_encoder, scaler=False, fit_scaler=False):
     ohe_df.index = df.index
     df = pd.concat([df.select_dtypes(exclude="object"), ohe_df], axis=1)
     # Normalize features
+    # columns = ["Hp", "Sp", "Sk", "Mr", "card_score"]
+    columns = ["card_score"]
     if fit_scaler == True:
-        fit_save_scaler(df)
+        fit_save_scaler(df, columns)
         with open("./_1_preprocessing/scaler.pickle", "rb") as f:
             scaler = pickle.load(f)
-    columns = ["Hp", "Sp", "Sk", "Mr", "card_score"]
     df.loc[:, columns] = scaler.transform(df.loc[:, columns].to_numpy())
     return df

@@ -86,7 +86,6 @@ type Criteria struct {
 // DO REQUESTS
 func PostRequest(body interface{}) []byte {
 	b, _ := json.Marshal(body)
-
 	request, _ := http.NewRequest("POST", URL, bytes.NewBuffer(b))
 	request.Header.Set("Content-Type", "application/json")
 	response, err := external_api_client.Do(request)
@@ -98,7 +97,6 @@ func PostRequest(body interface{}) []byte {
 	if err != nil {
 		fmt.Printf("Error reading the response from the external api: %s\n", err)
 	}
-	// fmt.Println(string(data))
 	return data
 }
 
@@ -207,10 +205,6 @@ type AxieInfoEngineered struct {
 	Mouth      string  `json:"Mouth"`
 	Horn       string  `json:"Horn"`
 	Tail       string  `json:"Tail"`
-	Hp         float64 `json:"Hp"`
-	Speed      float64 `json:"Sp"`
-	Skill      float64 `json:"Sk"`
-	Morale     float64 `json:"Mr"`
 }
 
 // DEFINE REQUESTS IDENTICAL NFTS
@@ -338,36 +332,79 @@ type Result struct {
 
 // PARSE RESPONSES TRANSFER HISTORY
 
-func ParseTransferHistory(data []byte) []OldPrice {
+func ParseTransferHistoryNft(data []byte) PriceHistory {
 	var result JsonBlobTransferHistory
 	json.Unmarshal([]byte(data), &result)
-	if result.Data.Axie.TransferHistory.Total == 0 {
-		fmt.Printf("0 identical axies\n")
-	}
 	if result.Data.Axie.TransferHistory.Results == nil {
 		fmt.Printf("Error. Empty response from the market api\n")
 	}
-	var history []OldPrice
-	for _, result := range result.Data.Axie.TransferHistory.Results {
-		price := ExtractTransferHistory(result)
-		history = append(history, price)
+	var history PriceHistory
+	for _, transfer := range result.Data.Axie.TransferHistory.Results {
+		price, timestamp, date := OneTransfer(transfer)
+		history.Prices = append(history.Prices, price)
+		history.Dates = append(history.Dates, date)
+		history.Timestamps = append(history.Timestamps, timestamp)
+		history.Ids = append(history.Ids, result.Data.Axie.Id)
 	}
 	return history
 }
 
-func ExtractTransferHistory(result Result) OldPrice {
-	var price OldPrice
+func OneTransfer(result Result) (float64, time.Time, string) {
 	price_value, _ := strconv.ParseFloat(result.WithPrice, 64)
 	unix := time.Unix(int64(result.Timestamp), 0)
 	date := strconv.FormatInt(int64(unix.Day()), 10) + "/" + strconv.FormatInt(int64((unix.Month())), 10) + "/" + strconv.FormatInt(int64(unix.Year()), 10)
-	price.Price = price_value * 1e-18
-	price.Timestamp = unix
-	price.Date = date
-	return price
+	return price_value * 1e-18, unix, date
 }
 
-type OldPrice struct {
-	Price     float64
-	Timestamp time.Time
-	Date      string
+type PriceHistory struct {
+	Prices     []float64
+	Timestamps []time.Time
+	Dates      []string
+	Ids        []string
+}
+
+// APPEND TRANSFER HISTORY
+
+func (h *PriceHistory) Append(item PriceHistory) PriceHistory {
+	h.Prices = append(h.Prices, item.Prices...)
+	h.Dates = append(h.Dates, item.Dates...)
+	h.Timestamps = append(h.Timestamps, item.Timestamps...)
+	h.Ids = append(h.Ids, item.Ids...)
+	return *h
+}
+
+// SORT TRANSFER HISTORY
+
+type SortByTimestamp PriceHistory
+
+func (sbo SortByTimestamp) Len() int {
+	return len(sbo.Prices)
+}
+
+func (sbo SortByTimestamp) Swap(i, j int) {
+	sbo.Prices[i], sbo.Prices[j] = sbo.Prices[j], sbo.Prices[i]
+	sbo.Dates[i], sbo.Dates[j] = sbo.Dates[j], sbo.Dates[i]
+	sbo.Ids[i], sbo.Ids[j] = sbo.Ids[j], sbo.Ids[i]
+	sbo.Timestamps[i], sbo.Timestamps[j] = sbo.Timestamps[j], sbo.Timestamps[i]
+}
+
+func (sbo SortByTimestamp) Less(i, j int) bool {
+	return sbo.Timestamps[i].After(sbo.Timestamps[j])
+}
+
+type SortByPrice PriceHistory
+
+func (sbo SortByPrice) Len() int {
+	return len(sbo.Prices)
+}
+
+func (sbo SortByPrice) Swap(i, j int) {
+	sbo.Prices[i], sbo.Prices[j] = sbo.Prices[j], sbo.Prices[i]
+	sbo.Dates[i], sbo.Dates[j] = sbo.Dates[j], sbo.Dates[i]
+	sbo.Ids[i], sbo.Ids[j] = sbo.Ids[j], sbo.Ids[i]
+	sbo.Timestamps[i], sbo.Timestamps[j] = sbo.Timestamps[j], sbo.Timestamps[i]
+}
+
+func (sbo SortByPrice) Less(i, j int) bool {
+	return sbo.Prices[i] < sbo.Prices[j]
 }

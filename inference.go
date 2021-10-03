@@ -20,12 +20,12 @@ const PAGES_TO_SCAN = 4                          // Each page shows 100 nfts
 var URL string = "https://axieinfinity.com/graphql-server-v2/graphql"
 var bargains = make(map[int]bool)
 
-// prx_url, _ := url.Parse(PRX)
-// transport := &http.Transport{Proxy: http.ProxyURL(prx_url)}
+// var prx_url, _ = url.Parse(PRX)
+// var transport = &http.Transport{Proxy: http.ProxyURL(prx_url)}
 // transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-// external_api_client := &http.Client{Transport: transport, Timeout: time.Second * 10}
-var external_api_client = &http.Client{Timeout: time.Second * 10} // Sans prxy
+// var external_api_proxy_client = &http.Client{Transport: transport, Timeout: time.Second * 10}
 
+var external_api_client = &http.Client{Timeout: time.Second * 10}
 var api_client = &http.Client{Timeout: time.Second * 10}
 
 func main() {
@@ -44,22 +44,39 @@ func predict_on_batches() {
 				if ok {
 					batch_results := feature_engineer_and_predict(batch)
 					for _, nft := range batch_results {
-						if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.PriceUSD+250 && nft.PriceUSD > 50 {
-							bargains[nft.Id] = true
-							// go func() {
-							current_prices, second_lowest := get_current_listings(nft)
-							price_history := get_price_history(nft)
-							if second_lowest > 0.01+(nft.PriceBy100*0.01) {
-								go notify_discord(nft, current_prices, price_history)
-							}
-							// }()
-						}
+						notify_if_cheap(nft)
 					}
 				} else {
 					fmt.Printf("Error getting data from go channel")
 				}
 			}
 		}()
+	}
+}
+
+// 2 step filer: 1) price vs ML price prediction 2) price vs market prices
+func notify_if_cheap(nft AxieInfoEngineered) {
+	if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.PriceUSD+200 && nft.PriceUSD > 50 {
+		bargains[nft.Id] = true
+
+		start := time.Now()
+		current_prices, price_history := price_info(nft) // 1 request ; 1 request -> 5 requests
+		elapsed := time.Since(start)
+		fmt.Printf("Price info took: %s \n", elapsed)
+
+		sort.Float64s(current_prices)
+		var second_lowest = 10.0000
+		if len(current_prices) > 1 {
+			second_lowest = current_prices[1]
+		}
+		// sort.Sort(SortByPrice(price_history))
+		// var second_lowest_history = 10.000
+		// if len(price_history.Prices) > 1 {
+		// 	second_lowest_history = price_history.Prices[1]
+		// }
+		if second_lowest > 0.01+(nft.PriceBy100*0.01) { //&& second_lowest_historical > (nft.PriceBy100*0.01)
+			go notify_discord(nft, current_prices, price_history)
+		}
 	}
 }
 
@@ -79,42 +96,14 @@ func feature_engineer_and_predict(batch []AxieInfo) []AxieInfoEngineered {
 	var batch_results []AxieInfoEngineered
 	json.Unmarshal([]byte(results), &batch_results)
 	if len(batch_results) == 0 {
-		fmt.Print("Empty/bad respone from the Python api - ")
+		fmt.Print("Empty/bad respone from the Python api")
 	} else {
 		fmt.Printf("\n%v\n", batch_results[0].Id)
 	}
 	return batch_results
 }
 
-func get_current_listings(nft AxieInfoEngineered) ([]float64, float64) {
-	var body RequestBody = CreateBodyIdenticalNfts(nft, true)
-	data := PostRequest(&body)
-	prices := ParsePricesIdenticalNfts(data)
-	sort.Float64s(prices)
-	if len(prices) > 1 {
-		return prices, prices[1]
-	} else {
-		return prices, 0.0
-	}
-}
-
-func get_price_history(nft AxieInfoEngineered) []OldPrice {
-	var body RequestBody = CreateBodyIdenticalNfts(nft, false)
-	data := PostRequest(&body)
-	ids := ParseIdsIdenticalNfts(data)
-	var price_history []OldPrice
-	for _, nft_id := range ids {
-		var bd RequestBodyTransferHistory = CreateBodyTransferHistory(nft_id)
-		data := PostRequest(&bd)
-		transfer_history_nft := ParseTransferHistory(data)
-		price_history = append(price_history, transfer_history_nft...)
-		time.Sleep(time.Duration(rand.Intn(500)+500) * time.Millisecond) // To avoid getting blocked by the api if not using proxies
-	}
-	return price_history
-}
-
 func get_data() {
-
 	var wg sync.WaitGroup
 	// Adds jobs to post_queque on an infinite loop
 	go func() {

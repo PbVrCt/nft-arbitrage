@@ -1,3 +1,5 @@
+"""This api serves the preprocessing and model for real time inference on the data extracted with go.
+ It loads the same preprocessing utilitiles that were used during training"""
 import pickle
 
 import pandas as pd
@@ -9,11 +11,11 @@ from _1_preprocessing.feature_eng_utils import score_df
 # Model
 with open("./_2_model_training/_XGBOOST.pkl", "rb") as f:  # XGBOOST,lightGBM,KNN,tree
     model = pickle.load(f)
-# One hot encoder for the axie class
+# One hot encoder
 with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
     oh_enc = pickle.load(f)
-# One hot encoder for the axie class
-with open("./_1_preprocessing/scaler.pkl", "rb") as f:
+# Scaler
+with open("./_1_preprocessing/scaler.pickle", "rb") as f:
     scaler = pickle.load(f)
 # Card and combo scores
 with open("./_1_preprocessing/combo_scores.txt") as f:
@@ -57,7 +59,7 @@ class NewR(Resource):
                 [
                     basic_info,
                     price_predictions,
-                    df[["Hp", "Sp", "Sk", "Mr", "BreedCount"]],
+                    df["BreedCount"],
                 ],
                 axis=1,
             )
