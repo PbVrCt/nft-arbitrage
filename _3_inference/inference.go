@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"sort"
-	"sync"
 	"time"
 )
 
@@ -20,13 +18,12 @@ const PAGES_TO_SCAN = 4                          // Each page shows 100 nfts
 var URL string = "https://axieinfinity.com/graphql-server-v2/graphql"
 var bargains = make(map[int]bool)
 
-// var prx_url, _ = url.Parse(PRX)
-// var transport = &http.Transport{Proxy: http.ProxyURL(prx_url)}
-// transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-// var external_api_proxy_client = &http.Client{Transport: transport, Timeout: time.Second * 10}
-
 var external_api_client = &http.Client{Timeout: time.Second * 10}
-var api_client = &http.Client{Timeout: time.Second * 10}
+var python_api_client = &http.Client{Timeout: time.Second * 10}
+
+// var prx_url, _ = url.Parse(PRX)
+// var transport = &http.Transport{Proxy: http.ProxyURL(prx_url), TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+// var external_api_proxy_client = &http.Client{Transport: transport, Timeout: time.Second * 10}
 
 func main() {
 	InitConfig() // Loads env variables in the global_env.go file
@@ -60,9 +57,9 @@ func notify_if_cheap(nft AxieInfoEngineered) {
 		bargains[nft.Id] = true
 
 		start := time.Now()
-		current_prices, price_history := price_info(nft) // 1 request ; 1 request -> 5 requests
+		current_prices, price_history := price_info(nft) // 1 request + (1 request -> 5 requests) = 7 requests
 		elapsed := time.Since(start)
-		fmt.Printf("Price info took: %s \n", elapsed)
+		fmt.Printf("Price_info took: %s \n", elapsed)
 
 		sort.Float64s(current_prices)
 		var second_lowest = 10.0000
@@ -70,9 +67,9 @@ func notify_if_cheap(nft AxieInfoEngineered) {
 			second_lowest = current_prices[1]
 		}
 		// sort.Sort(SortByPrice(price_history))
-		// var second_lowest_history = 10.000
+		// var second_lowest_historical = 10.000
 		// if len(price_history.Prices) > 1 {
-		// 	second_lowest_history = price_history.Prices[1]
+		// 	second_lowest_historical = price_history.Prices[1]
 		// }
 		if second_lowest > 0.01+(nft.PriceBy100*0.01) { //&& second_lowest_historical > (nft.PriceBy100*0.01)
 			go notify_discord(nft, current_prices, price_history)
@@ -86,7 +83,7 @@ func feature_engineer_and_predict(batch []AxieInfo) []AxieInfoEngineered {
 	b, _ := json.Marshal(batch)
 	request, _ := http.NewRequest("POST", "http://localhost:5000/api/predict", bytes.NewBuffer(b))
 	request.Header.Set("Content-Type", "application/json")
-	response, err := api_client.Do(request)
+	response, err := python_api_client.Do(request)
 	if err != nil {
 		fmt.Printf("The HTTP request to the Python server failed with error: %s\n", err)
 		return nil
@@ -104,7 +101,6 @@ func feature_engineer_and_predict(batch []AxieInfo) []AxieInfoEngineered {
 }
 
 func get_data() {
-	var wg sync.WaitGroup
 	// Adds jobs to post_queque on an infinite loop
 	go func() {
 		for {
@@ -114,28 +110,24 @@ func get_data() {
 		}
 	}()
 	// Worker pool: Wihle jobs arrive from post_queque, n threads run on a loop calling get_data_batch
-	wg.Add(NTHREADS)
 	for i := 0; i < NTHREADS; i++ {
 		go func() {
 			for {
 				i, ok := <-post_queque
 				if !ok {
 					fmt.Printf("Exiting thread")
-					wg.Done()
 					return
 				}
 				get_data_batch(i)
-				time.Sleep(time.Duration(rand.Intn(1)+1) * time.Second)
 			}
 		}()
 	}
-	wg.Wait() // For now does nothing because the loop is infinite
 }
 
 // Gets data from a single post request to the external API
-func get_data_batch(from int) {
-	var body RequestBody = CreateBody(from)
-	data := PostRequest(&body)
+func get_data_batch(page int) {
+	var body RequestBody = CreateBody(page * 100)
+	data := PostRequest(&body, external_api_client)
 	var result JsonBlob
 	var batch []AxieInfo
 	var bool_err bool

@@ -119,7 +119,7 @@ def fit_save_scaler(df, columns_to_fit):
 
 
 # Takes either a fitted sklearn scaler or fit_scaler = True
-def score_df(df, scores_lookup, class_encoder, scaler=False, fit_scaler=False):
+def preprocessing_fn(df, scores_lookup, class_encoder, scaler=False, fit_scaler=False):
     df = df.copy()
     # Feature engineering
     df.loc[:, "multiplier_score"] = df.apply(assign_multiplier_score, axis=1)

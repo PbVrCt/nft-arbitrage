@@ -1,15 +1,14 @@
-# Check that using proxies works in inference.go
-# Test hyperparam configs
-# Figure out how to pack go scripts into packages and make go code more neat
-
-# Do the data collection in go (cheaper to run on cloud)
-# Get data collection into a container -> Upload to aws ElasticContainerService
-# Collect data with Eth prices -> Use Eth prices as training labels -> Adapt buy Conditions and Discord Notifications
+# Try different features and hyperparam configs
+# Investigate graph based machine learning
+# Train a NN
 
 # Figure out if able to scan not recently listed nfts. Use postman to explore possible queries
-# Investigate graph based machine learning
-# Play around with the features and hyperparameters
-# Train a NN
+# Figure out if able to modify base requests to get more fields
+
+# Do the data collection in go (cheaper to run on cloud)
+# Move data collection into a container -> Upload to aws ElasticContainerService
+# Collect data with Eth prices -> Use Eth prices as training labels -> Adapt buy Conditions and Discord Notifications
+
 
 # Move the training to sagemaker?
 # Make a revenue dashboard using streamlit? Serve through aws?

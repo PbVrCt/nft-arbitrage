@@ -11,7 +11,9 @@ from _1_preprocessing.feature_eng_utils import (
 
 # Load the data
 leaderboard = pd.read_csv("./_0_get_data_leaderboard/leaderboard.csv")
-df = pd.read_csv(f"./data/full_cleansed.csv", index_col=[0]).set_index(["Id"])  # Figure out where the col 0 comes from
+df = pd.read_csv(f"./data/full_cleansed.csv", index_col=[0]).set_index(
+    ["Id"]
+)  # Figure out where the col 0 comes from
 
 # Fit, save, and load the one hot encoder
 fit_one_hot_encoder(df)
@@ -31,7 +33,7 @@ print("Time elapsed in feature engineering 100 nft: ", end - start, "s")
 print(row.head(), "\n\n")
 
 # Do the feature engineering on the data and save it
-df = score_df(df, combo_scores, oh_enc, fit_scaler=True)
+df = preprocessing_fn(df, combo_scores, oh_enc, fit_scaler=True)
 print(df.head())
 df.to_csv(f"./data/full_engineered.csv")
 print("\nSaved")

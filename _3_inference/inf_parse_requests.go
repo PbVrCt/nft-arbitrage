@@ -84,18 +84,22 @@ type Criteria struct {
 }
 
 // DO REQUESTS
-func PostRequest(body interface{}) []byte {
+func PostRequest(body interface{}, client *http.Client) []byte {
 	b, _ := json.Marshal(body)
 	request, _ := http.NewRequest("POST", URL, bytes.NewBuffer(b))
 	request.Header.Set("Content-Type", "application/json")
-	response, err := external_api_client.Do(request)
+	parseFormErr := request.ParseForm()
+	if parseFormErr != nil {
+		fmt.Println("Error defining the request: ", parseFormErr)
+	}
+	response, err := client.Do(request)
 	if err != nil {
-		fmt.Printf("The HTTP request to the external API failed with error: %s\n", err)
+		fmt.Printf("The HTTP request failed with error: %s\n", err)
 	}
 	defer response.Body.Close()
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		fmt.Printf("Error reading the response from the external api: %s\n", err)
+		fmt.Printf("Error reading response from a request: %s\n", err)
 	}
 	return data
 }

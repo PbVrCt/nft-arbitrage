@@ -24,14 +24,14 @@ func price_info(nft AxieInfoEngineered) ([]float64, PriceHistory) {
 
 func get_current_listings(nft AxieInfoEngineered, prices_ch chan []float64) {
 	var body RequestBody = CreateBodyIdenticalNfts(nft, true)
-	data := PostRequest(&body)
+	data := PostRequest(&body, external_api_client)
 	prices := ParsePricesIdenticalNfts(data)
 	prices_ch <- prices
 }
 
 func get_price_history(nft AxieInfoEngineered, history_ch chan PriceHistory) {
 	var body RequestBody = CreateBodyIdenticalNfts(nft, false)
-	data := PostRequest(&body)
+	data := PostRequest(&body, external_api_client)
 	ids := ParseIdsIdenticalNfts(data)
 	var wg sync.WaitGroup
 	wg.Add(len(ids))
@@ -39,7 +39,7 @@ func get_price_history(nft AxieInfoEngineered, history_ch chan PriceHistory) {
 		go func(nft_id int) {
 			defer wg.Done()
 			var bd RequestBodyTransferHistory = CreateBodyTransferHistory(nft_id)
-			data := PostRequest(&bd)
+			data := PostRequest(&bd, external_api_client)
 			transfer_history_nft := ParseTransferHistoryNft(data)
 			history_ch <- transfer_history_nft
 		}(nft_id)

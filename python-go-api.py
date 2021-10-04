@@ -1,12 +1,12 @@
-"""This api serves the preprocessing and model for real time inference on the data extracted with go.
- It loads the same preprocessing utilitiles that were used during training"""
+"""This api serves the preprocessing utilies and ml model for real time inference on the data extracted with go.
+ It loads the same preprocessing utilitiles that were used for model training"""
 import pickle
 
 import pandas as pd
 from flask import Flask, redirect, request, jsonify, make_response, send_file
 from flask_restful import Resource, Api, abort
 
-from _1_preprocessing.feature_eng_utils import score_df
+from _1_preprocessing.feature_eng_utils import preprocessing_fn
 
 # Model
 with open("./_2_model_training/_XGBOOST.pkl", "rb") as f:  # XGBOOST,lightGBM,KNN,tree
@@ -48,7 +48,7 @@ class NewR(Resource):
             ],
         ]
         df = df.drop(["Image", "PriceBy100", "PriceUSD"], axis=1)
-        df = score_df(
+        df = preprocessing_fn(
             df, combo_scores, class_encoder=oh_enc, scaler=scaler
         )  # feature engineering
         price_predictions = df.apply(
