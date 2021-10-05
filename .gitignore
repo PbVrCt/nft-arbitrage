@@ -8,8 +8,9 @@ _0_get_data_leaderboard/
 _1_preprocessing/*.pickle
 _1_preprocessing/*.txt
 _2_model_training/*.pkl
+_2_model_training/*.tf
 test_snippets
 data/*
-Keras_tuner_metadata/*/**
+Keras_tuner_metadata
 TensorBoard_logs/
 retrieve_prices_test

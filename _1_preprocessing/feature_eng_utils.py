@@ -104,9 +104,9 @@ def assign_attributes(row, i):
         return 0
 
 
-def fit_one_hot_encoder(df):
+def fit_one_hot_encoder(df, columns_to_encode):
     enc = OneHotEncoder(handle_unknown="ignore").fit(
-        df.loc[:, ["Class", "Back", "Mouth", "Horn", "Tail"]].to_numpy()
+        df.loc[:, columns_to_encode].to_numpy()
     )
     with open("./_1_preprocessing/one_hot_encoder.pickle", "wb") as f:
         pickle.dump(enc, f)
@@ -118,8 +118,15 @@ def fit_save_scaler(df, columns_to_fit):
         pickle.dump(scaler, f)
 
 
-# Takes either a fitted sklearn scaler or fit_scaler = True
-def preprocessing_fn(df, scores_lookup, class_encoder, scaler=False, fit_scaler=False):
+# Takes either a fitted sklearn scaler or fit_scaler = True. Same for the one hot encoder
+def preprocessing_fn(
+    df,
+    scores_lookup,
+    encoder=False,
+    scaler=False,
+    fit_encoder=True,
+    fit_scaler=True,
+):
     df = df.copy()
     # Feature engineering
     df.loc[:, "multiplier_score"] = df.apply(assign_multiplier_score, axis=1)
@@ -162,19 +169,18 @@ def preprocessing_fn(df, scores_lookup, class_encoder, scaler=False, fit_scaler=
     df.drop(build, axis=1, inplace=True)
     df.drop(["Eyes", "Ears"], axis=1, inplace=True)
     # One hot encode categorical columns
-    ohe = class_encoder.transform(
-        df.loc[:, ["Class", "Back", "Mouth", "Horn", "Tail"]].to_numpy()
-    ).toarray()
-    ohe_df = pd.DataFrame(
-        ohe,
-        columns=class_encoder.get_feature_names(
-            ["Class", "Back", "Mouth", "Horn", "Tail"]
-        ),
-    ).astype(int)
+    columns = ["Class", "Back", "Mouth", "Horn", "Tail"]
+    columns = ["Class"]
+    if fit_encoder == True:
+        fit_one_hot_encoder(df, columns)
+        with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
+            encoder = pickle.load(f)
+    ohe = encoder.transform(df.loc[:, columns].to_numpy()).toarray()
+    ohe_df = pd.DataFrame(ohe, columns=encoder.get_feature_names(columns)).astype(int)
     ohe_df.index = df.index
     df = pd.concat([df.select_dtypes(exclude="object"), ohe_df], axis=1)
     # Normalize features
-    # columns = ["Hp", "Sp", "Sk", "Mr", "card_score"]
+    columns = ["Hp", "Sp", "Sk", "Mr", "card_score"]
     columns = ["card_score"]
     if fit_scaler == True:
         fit_save_scaler(df, columns)

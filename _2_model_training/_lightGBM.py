@@ -13,9 +13,17 @@ from _2_model_training.reduce_mem_usage import reduce_mem_usage
 
 df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
 df = reduce_mem_usage(df)
-features = df.iloc[:-3000].loc[:, df.columns != "Price"].to_numpy()
+features = (
+    df.iloc[:-3000]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .to_numpy()
+)
 labels = df.iloc[:-3000].loc[:, "Price"].to_numpy()
-test_features = df.iloc[-3000:].loc[:, df.columns != "Price"].to_numpy()
+test_features = (
+    df.iloc[-3000:]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .to_numpy()
+)
 test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 
 
@@ -46,6 +54,8 @@ fit_params = {
     "categorical_feature": "auto",
 }
 param_test = {
+    "n_estimators": sp_randint(20, 200),
+    "max_depth": sp_randint(10, 30),
     "num_leaves": sp_randint(6, 50),
     "min_child_samples": sp_randint(100, 500),
     "min_child_weight": [1e-5, 1e-3, 1e-2, 1e-1, 1, 1e1, 1e2, 1e3, 1e4],
@@ -60,7 +70,7 @@ clf = lgb.LGBMRegressor(
     silent=True,
     metric="mse",
     n_jobs=1,
-    n_estimators=50,
+    # n_estimators=50,
     # force_col_wise=True,
 )
 

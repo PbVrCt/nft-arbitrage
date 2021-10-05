@@ -22,3 +22,5 @@ flask-restful
 selenium
 cssselect
 lxml
+
+neural-structured-learning

@@ -4,24 +4,24 @@ from keras_tuner import HyperModel
 
 
 class NNmodel(HyperModel):
-    def __init__(self, input_shape, num_classes):
-        self.input_shape = input_shape
-        self.num_classes = num_classes
+    def __init__(self):
+        # self.input_shape = input_shape
+        pass
 
     def build(self, hp):
 
         # Hyperparameter search space
         learning_rate = hp.Float(
             "learning_rate",
-            min_value=1e-6,
-            max_value=1e-4,
+            min_value=1e-8,
+            max_value=1e-1,
             default=5e-5,
             sampling="linear",
         )
         optimizer = hp.Choice("optimizer", values=["adam", "adagrad"])
         # activation_i=hp.Choice('hidden_activation_i',values=['relu', 'tanh', 'softmax'],default='relu')
-        clipnorm = hp.Float("clipnorm", min_value=0.5, max_value=10.0, default=1.0)
-        clipvalue = hp.Float("clipvalue", min_value=0.1, max_value=0.3, default=0.2)
+        # clipnorm = hp.Float("clipnorm", min_value=0.5, max_value=10.0, default=1.0)
+        # clipvalue = hp.Float("clipvalue", min_value=0.1, max_value=0.3, default=0.2)
 
         # # Initial hidden layers
         units_i = hp.Int(
@@ -124,18 +124,19 @@ class NNmodel(HyperModel):
         # model.add( k.layers.GaussianNoise( gaussianNoise_f ) )
 
         # Output layer
-        model.add(k.layers.Dense(self.num_classes, activation="relu"))
+        model.add(k.layers.Dense(1, activation="relu"))
+
         # Compile
         loss_fn = k.losses.MeanSquaredError(name="loss")
         if optimizer == "adam":
             with hp.conditional_scope("optimizer", "adam"):
                 optimizer = k.optimizers.Adam(
-                    learning_rate=learning_rate, clipnorm=clipnorm, clipvalue=clipvalue
+                    learning_rate=learning_rate,  # clipnorm=clipnorm, clipvalue=clipvalue
                 )
         elif optimizer == "adagrad":
             with hp.conditional_scope("optimizer", "adagrad"):
                 optimizer = k.optimizers.Adagrad(
-                    learning_rate=learning_rate, clipnorm=clipnorm, clipvalue=clipvalue
+                    learning_rate=learning_rate,  # clipnorm=clipnorm, clipvalue=clipvalue
                 )
         model.compile(
             optimizer=optimizer,

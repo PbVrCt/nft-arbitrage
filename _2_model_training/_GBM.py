@@ -26,42 +26,48 @@ test_features = (
 )
 test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 
-# Define the model: Random Forest
-class XGBOOST(kt.HyperModel):  # TODO: change the names to GBM
+# Define the model: Gradient Boosting Machine
+class GBM(kt.HyperModel):
     def build(self, hp):
-        # model_type = hp.Choice("model_type", ["xgboost", "random_forest"])
         n_estimators = hp.Int("n_estimators", 10, 200)
         max_depth = hp.Int("max_depth", 3, 20)
-        max_samples = hp.Float("max_samples", min_value=0.4, max_value=0.99)
-        max_features = hp.Choice(
-            "max_features", ["sqrt", "log2"]
-        )  # rule of thumb: root(n_features)
+        subsample = hp.Float("subsample", min_value=0.4, max_value=0.99)
+        # rule of thumb: max_features =root(n_features)
+        max_features = hp.Choice("max_features", ["auto", "sqrt", "log2"])
         learning_rate = hp.Float("learning_rate", min_value=0.001, max_value=0.09)
+        criterion = hp.Choice("criterion", ["friedman_mse", "squared_error", "mse"])
+        loss = hp.Choice(
+            "loss",
+            ["squared_error", "ls", "absolute_error", "lad", "huber", "quantile"],
+        )
+
         model = ensemble.GradientBoostingRegressor(
             n_estimators=n_estimators,
             max_depth=max_depth,
-            subsample=max_samples,
+            subsample=subsample,
             max_features=max_features,
             learning_rate=learning_rate,
+            criterion=criterion,
+            loss=loss,
         )
         return model
 
 
-hypermodel = XGBOOST()
+hypermodel = GBM()
 # Find optimal hyperparameters
 tuner = kt.tuners.SklearnTuner(
     oracle=kt.oracles.BayesianOptimizationOracle(
         # Keras docs: "Note that for this Tuner, the objective for the Oracle should always be set to Objective('score', direction='max')"
         objective=kt.Objective("score", "max"),
-        max_trials=2,
+        max_trials=40,
     ),
     hypermodel=hypermodel,
     scoring=metrics.make_scorer(
         metrics.mean_squared_error, greater_is_better=False, squared=False
     ),  # mean_absolute_error, mean_squared_error, max_error
     cv=model_selection.RepeatedKFold(n_splits=7, n_repeats=1, random_state=1),
-    project_name="Keras_tuner_metadata/XGBOOST",
-    overwrite=False,
+    project_name="Keras_tuner_metadata/GBM",
+    overwrite=True,
 )
 tuner.search(features, labels)
 # Show the results
@@ -78,8 +84,8 @@ feat_imp = pd.Series(
 )
 feat_imp.nlargest(20).plot(kind="barh", figsize=(10, 6))
 plt.tight_layout()
-plt.draw()
-plt.pause(10)
+# plt.draw()
+# plt.pause(10)
 
 # Do the final test on the test set
 predictions = best_model.predict(test_features)
@@ -90,5 +96,7 @@ print(
 )
 
 # Save the model
-with open("_2_model_training/_XGBOOST.pkl", "wb") as f:
+with open("_2_model_training/_GBM.pkl", "wb") as f:
     pickle.dump(best_model, f)
+
+plt.show()

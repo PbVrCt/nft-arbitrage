@@ -1,15 +1,12 @@
-# Try different features and hyperparam configs
-# Investigate graph based machine learning
-# Train a NN
-
 # Figure out if able to scan not recently listed nfts. Use postman to explore possible queries
 # Figure out if able to modify base requests to get more fields
 
 # Do the data collection in go (cheaper to run on cloud)
 # Move data collection into a container -> Upload to aws ElasticContainerService
-# Collect data with Eth prices -> Use Eth prices as training labels -> Adapt buy Conditions and Discord Notifications
-
+# Collect data with Eth prices -> Use Eth prices as training labels (Adapt data cleansing, buy Conditions and Discord Notifications)
+https://stackoverflow.com/questions/64619970/preventing-context-deadline-exceeded-client-timeout-exceeded-while-awaiting-hea
 
 # Move the training to sagemaker?
 # Make a revenue dashboard using streamlit? Serve through aws?
 # Move the inference to kinesis? In that case check the record weights in kinesis
+# Try Pytorch? Tensorflow's model.predict is too slow for the inference

@@ -11,20 +11,29 @@ from _2_model_training.reduce_mem_usage import reduce_mem_usage
 
 df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
 df = reduce_mem_usage(df)
-features = df.iloc[:-3000].loc[:, df.columns != "Price"].to_numpy()
+features = (
+    df.iloc[:-3000]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .to_numpy()
+)
 labels = df.iloc[:-3000].loc[:, "Price"].to_numpy()
-test_features = df.iloc[-3000:].loc[:, df.columns != "Price"].to_numpy()
+test_features = (
+    df.iloc[-3000:]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .to_numpy()
+)
 test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 
 # Define the model and hyperpameters
 model = pipeline.Pipeline(
     steps=[
-        ("poly", preprocessing.PolynomialFeatures(include_bias=False)),
+        ("poly", preprocessing.PolynomialFeatures(include_bias=False, order="C")),
         ("model", linear_model.LinearRegression()),
     ]
 )
-degree = range(2, 5)
-order = ["C", "F"]
+
+# Only hyperparameter
+degree = range(2, 4)
 
 
 def mse_scorer(*args):
@@ -34,7 +43,7 @@ def mse_scorer(*args):
 
 
 # Define the grid search
-grid = dict(poly__degree=degree, poly__order=order)
+grid = dict(poly__degree=degree)
 cv = model_selection.RepeatedKFold(n_splits=7, n_repeats=1, random_state=1)
 gs = model_selection.GridSearchCV(
     estimator=model,

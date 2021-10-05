@@ -11,11 +11,20 @@ import matplotlib.pyplot as plt
 
 from _2_model_training.reduce_mem_usage import reduce_mem_usage
 
+# Load data and split sets
 df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
 df = reduce_mem_usage(df)
-features = df.iloc[:-3000].loc[:, df.columns != "Price"].to_numpy()
+features = (
+    df.iloc[:-3000]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .to_numpy()
+)
 labels = df.iloc[:-3000].loc[:, "Price"].to_numpy()
-test_features = df.iloc[-3000:].loc[:, df.columns != "Price"].to_numpy()
+test_features = (
+    df.iloc[-3000:]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .to_numpy()
+)
 test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 
 # Define the model: Random Forest
@@ -24,11 +33,12 @@ class RF(kt.HyperModel):
         splitter = hp.Choice("splitter", ["best", "random"])
         max_features = hp.Choice("max_features", ["auto", "log2", "sqrt"])
         max_depth = hp.Int("max_depth", 2, 12)
-        min_samples_leaf = hp.Int("min_samples_leaf", 2, 10)
+        min_samples_leaf = hp.Int("min_samples_leaf", 1, 10)
         max_leaf_nodes = hp.Int("max_leaf_nodes", 10, 100)
         min_weight_fraction_leaf = hp.Float(
             "min_weight_fraction_leaf", min_value=0.1, max_value=0.5
         )
+        ccp_alpha = hp.Float("ccp_alpha", min_value=0.01, max_value=4)
         model = tree.DecisionTreeRegressor(
             splitter=splitter,
             max_depth=max_depth,

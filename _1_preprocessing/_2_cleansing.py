@@ -14,20 +14,20 @@ df = pd.read_json(f"./data/full_raw.json")
 print("\nTotal rows: ", df.shape[0])
 df = df.drop_duplicates(subset=["Id", "Price"])  # ["Id","Price"]
 print("Total rows wtihout duplicates: ", df.shape[0])
-df = df[df["PriceUSD"] < 3000].copy()
+df = df[df["Price"] < 700].copy()  # "PriceUSD"
 print("Total rows below price treshold: ", df.shape[0])
 
 # Subsample, weighting more the less frequent classes
 probs = 1 / df["Class"].map(df["Class"].value_counts())
-df = df.sample(n=int(df.shape[0] * 0.3), weights=probs)
+df = df.sample(n=int(df.shape[0] * 0.7), weights=probs)
 print("Total rows after subsampling by class: ", df.shape[0])
 # # Subsample, weighting more the less frequent prices
 # probs = 1 / df["Price"].map(df["Price"].value_counts(normalize=True)) + 1
 # df = df.sample(n=280000, weights=probs)
 # print("Total rows after subsampling by price: ", df.shape[0])
 
-features = df.loc[:, df.columns != ["PriceBy100", "PriceUSD"]]
-labels = df.loc[:, "PriceBy100"]
+features = df.loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+labels = df.loc[:, "Price"]  # "PriceBy100" (eth)
 
 # Check outliers, class frequencies, and price distributions
 assert df.index[np.isinf(df.select_dtypes(np.number)).any(1)].empty  # No infs
@@ -36,7 +36,9 @@ fig, axes = plt.subplots(2, 2, figsize=(13, 13))
 sns.boxplot(data=features.loc[:, ["BreedCount"]], orient="h", ax=axes[0, 0])
 sns.kdeplot(data=labels, ax=axes[0, 1])
 sns.countplot(x="Class", data=df, ax=axes[1, 0])
-sns.kdeplot(data=df, x="PriceBy100", hue="Class", fill=True, ax=axes[1, 1])
+sns.kdeplot(
+    data=df, x="Price", hue="Class", fill=True, ax=axes[1, 1]
+)  # "PriceBy100" (eth)
 
 # Unsupervised anomaly detection model
 ANOMALY_QUANTILE = 0.05  #  "auto"

@@ -10,20 +10,37 @@ from _2_model_training.reduce_mem_usage import reduce_mem_usage
 
 df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
 df = reduce_mem_usage(df)
-features = df.iloc[:-3000].loc[:, df.columns != "Price"].to_numpy()
+features = (
+    df.iloc[:-3000]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .to_numpy()
+)
 labels = df.iloc[:-3000].loc[:, "Price"].to_numpy()
-test_features = df.iloc[-3000:].loc[:, df.columns != "Price"].to_numpy()
+test_features = (
+    df.iloc[-3000:]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .to_numpy()
+)
 test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 
 # Define the model and hyperpameters
 model = neighbors.KNeighborsRegressor()
-n_neighbors = range(5, 25, 2)
-weights = ["uniform"]  # , "distance"]
+n_neighbors = range(5, 15, 5)
+leaf_size = range(20, 40, 10)
+weights = ["uniform", "distance"]
+algorithm = ["auto"]  # , "ball_tree", "kd_tree"]
 metric = ["euclidean"]  # , "manhattan", "minkowski"]
 p = [1, 2]
 # Define the search space
-grid = dict(n_neighbors=n_neighbors, weights=weights, metric=metric, p=p)
-cv = model_selection.RepeatedKFold(n_splits=7, n_repeats=1, random_state=1)
+grid = dict(
+    n_neighbors=n_neighbors,
+    weights=weights,
+    metric=metric,
+    p=p,
+    leaf_size=leaf_size,
+    algorithm=algorithm,
+)
+cv = model_selection.RepeatedKFold(n_splits=5, n_repeats=1, random_state=1)
 
 
 def mse_scorer(*args):
@@ -38,7 +55,7 @@ gs = model_selection.GridSearchCV(
     n_jobs=1,
     cv=cv,
     scoring=metrics.make_scorer(mse_scorer, greater_is_better=False),
-    verbose=1,
+    verbose=2,
 )
 # Hyperparameter tuning
 gs.fit(features, labels)
