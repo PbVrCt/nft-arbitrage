@@ -143,13 +143,13 @@ def preprocessing_fn(
         lambda df: assign_combo_score(df, scores_lookup, build), axis=1
     )
 
-    # df.loc[:, "stats"] = df.apply(assign_stats, axis=1)
-    # df[["Hp", "Sp", "Sk", "Mr"]] = pd.DataFrame(df.stats.tolist(), index=df.index)
-    # df.drop("stats", axis=1, inplace=True)
+    df.loc[:, "stats"] = df.apply(assign_stats, axis=1)
+    df[["Hp", "Sp", "Sk", "Mr"]] = pd.DataFrame(df.stats.tolist(), index=df.index)
+    df.drop("stats", axis=1, inplace=True)
 
-    # df.loc[:, "Attack"] = df.apply(lambda df: assign_attributes(df, 0), axis=1)
-    # df.loc[:, "Shield"] = df.apply(lambda df: assign_attributes(df, 1), axis=1)
-    # df.loc[:, "EnergyCost"] = df.apply(lambda df: assign_attributes(df, 2), axis=1)
+    df.loc[:, "Attack"] = df.apply(lambda df: assign_attributes(df, 0), axis=1)
+    df.loc[:, "Shield"] = df.apply(lambda df: assign_attributes(df, 1), axis=1)
+    df.loc[:, "EnergyCost"] = df.apply(lambda df: assign_attributes(df, 2), axis=1)
     # df.loc[:, "Stunt"] = df.apply(lambda df: assign_attributes(df, 3), axis=1)
     # df.loc[:, "Poison"] = df.apply(lambda df: assign_attributes(df, 4), axis=1)
     # df.loc[:, "DmgCombo"] = df.apply(lambda df: assign_attributes(df, 5), axis=1)
@@ -170,7 +170,7 @@ def preprocessing_fn(
     df.drop(["Eyes", "Ears"], axis=1, inplace=True)
     # One hot encode categorical columns
     columns = ["Class", "Back", "Mouth", "Horn", "Tail"]
-    columns = ["Class"]
+    # columns = ["Class"]
     if fit_encoder == True:
         fit_one_hot_encoder(df, columns)
         with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
@@ -181,7 +181,7 @@ def preprocessing_fn(
     df = pd.concat([df.select_dtypes(exclude="object"), ohe_df], axis=1)
     # Normalize features
     columns = ["Hp", "Sp", "Sk", "Mr", "card_score"]
-    columns = ["card_score"]
+    # columns = ["card_score"]
     if fit_scaler == True:
         fit_save_scaler(df, columns)
         with open("./_1_preprocessing/scaler.pickle", "rb") as f:

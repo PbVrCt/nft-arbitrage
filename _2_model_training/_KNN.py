@@ -44,7 +44,7 @@ cv = model_selection.RepeatedKFold(n_splits=5, n_repeats=1, random_state=1)
 
 
 def mse_scorer(*args):
-    score = metrics.mean_squared_error(*args)
+    score = metrics.mean_absolute_error(*args)
     print("score is {}".format(score))
     return score
 
@@ -77,7 +77,7 @@ predictions = best_model.predict(test_features)
 print(
     "\n",
     "Score on the test set: ",
-    metrics.mean_squared_error(test_labels, predictions),
+    metrics.mean_absolute_error(test_labels, predictions),
 )
 # Save the model
 with open("_2_model_training/_KNN.pkl", "wb") as f:

@@ -29,17 +29,17 @@ test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
 # Define the model: Gradient Boosting Machine
 class GBM(kt.HyperModel):
     def build(self, hp):
-        n_estimators = hp.Int("n_estimators", 10, 200)
-        max_depth = hp.Int("max_depth", 3, 20)
-        subsample = hp.Float("subsample", min_value=0.4, max_value=0.99)
+        n_estimators = hp.Int("n_estimators", 180, 200)
+        max_depth = hp.Int("max_depth", 15, 20)
+        subsample = hp.Float("subsample", min_value=0.8, max_value=0.99)
         # rule of thumb: max_features =root(n_features)
         max_features = hp.Choice("max_features", ["auto", "sqrt", "log2"])
-        learning_rate = hp.Float("learning_rate", min_value=0.001, max_value=0.09)
-        criterion = hp.Choice("criterion", ["friedman_mse", "squared_error", "mse"])
-        loss = hp.Choice(
-            "loss",
-            ["squared_error", "ls", "absolute_error", "lad", "huber", "quantile"],
-        )
+        learning_rate = hp.Float("learning_rate", min_value=0.03, max_value=0.05)
+        criterion = hp.Choice("criterion", ["friedman_mse"])
+        # loss = hp.Choice(
+        #     "loss",
+        #     ["squared_error", "ls", "absolute_error", "lad", "huber", "quantile"],
+        # )
 
         model = ensemble.GradientBoostingRegressor(
             n_estimators=n_estimators,
@@ -48,7 +48,8 @@ class GBM(kt.HyperModel):
             max_features=max_features,
             learning_rate=learning_rate,
             criterion=criterion,
-            loss=loss,
+            # loss=loss,
+            verbose=2,
         )
         return model
 
@@ -59,13 +60,13 @@ tuner = kt.tuners.SklearnTuner(
     oracle=kt.oracles.BayesianOptimizationOracle(
         # Keras docs: "Note that for this Tuner, the objective for the Oracle should always be set to Objective('score', direction='max')"
         objective=kt.Objective("score", "max"),
-        max_trials=40,
+        max_trials=1,
     ),
     hypermodel=hypermodel,
     scoring=metrics.make_scorer(
         metrics.mean_squared_error, greater_is_better=False, squared=False
     ),  # mean_absolute_error, mean_squared_error, max_error
-    cv=model_selection.RepeatedKFold(n_splits=7, n_repeats=1, random_state=1),
+    cv=model_selection.RepeatedKFold(n_splits=2, n_repeats=1, random_state=1),
     project_name="Keras_tuner_metadata/GBM",
     overwrite=True,
 )
