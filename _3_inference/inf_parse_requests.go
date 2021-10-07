@@ -12,7 +12,7 @@ import (
 )
 
 // DEFINE REQUESTS
-func CreateBody(from int) RequestBody {
+func CreateBody(from int, query string) RequestBody {
 	body := RequestBody{}
 	body.Query = query
 	body.Variables.From = from
@@ -25,7 +25,7 @@ func CreateBody(from int) RequestBody {
 	return body
 }
 
-var query string = `
+var query_latest string = `
 query GetAxieLatest($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {
 	axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {
     results {
@@ -38,6 +38,37 @@ fragment AxieBrief on Axie {
   class
   breedCount
   image
+  genes
+  auction {
+    currentPrice
+    currentPriceUSD
+  }
+  battleInfo {
+    banned
+  }
+  parts {
+    name
+    class
+    type
+    specialGenes
+  }
+}
+`
+
+var query_brief_list string = `
+query GetAxieBriefList($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {
+	axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {
+    results {
+      ...AxieBrief
+    }
+  }
+}
+fragment AxieBrief on Axie {
+  id
+  class
+  breedCount
+  image
+  genes
   auction {
     currentPrice
     currentPriceUSD
@@ -137,16 +168,13 @@ type Part struct {
 
 // PARSE RESPONSES
 
-func ExtractBatchInfo(blob JsonBlob) ([]AxieInfo, bool) {
+func ExtractBatchInfo(blob JsonBlob) []AxieInfo {
 	var Axies []AxieInfo
-	if blob.Data.Axies.Results == nil {
-		return Axies, true
-	}
 	for _, axie := range blob.Data.Axies.Results {
 		axie_info := ExtractAxieInfo(axie)
 		Axies = append(Axies, axie_info)
 	}
-	return Axies, false
+	return Axies
 }
 
 func ExtractAxieInfo(ax Axie) AxieInfo {
@@ -220,11 +248,11 @@ func fmtPart(part string, part_category string) string {
 	return formatted
 }
 
-func CreateBodyIdenticalNfts(nft AxieInfoEngineered, sale bool) RequestBody {
+func CreateBodyIdenticalNfts(nft AxieInfoEngineered, sale bool, size int) RequestBody {
 	body := RequestBody{}
-	body.Query = query
+	body.Query = query_latest
 	body.Variables.From = 0
-	body.Variables.Size = 5
+	body.Variables.Size = size
 	if sale {
 		body.Variables.AuctionType = "Sale"
 	} else {
@@ -245,7 +273,7 @@ func ParseIdsIdenticalNfts(data []byte) []int {
 	var result JsonBlob
 	json.Unmarshal([]byte(data), &result)
 	if result.Data.Axies.Results == nil {
-		fmt.Printf("Error. Empty responses from the market api\n")
+		fmt.Printf("No similar nfts\n")
 	}
 	var ids []int
 	for _, axie := range result.Data.Axies.Results {
@@ -259,7 +287,7 @@ func ParsePricesIdenticalNfts(data []byte) []float64 {
 	var result JsonBlob
 	json.Unmarshal([]byte(data), &result)
 	if result.Data.Axies.Results == nil {
-		fmt.Printf("Error. Empty responses from the market api\n")
+		fmt.Printf("No similar nfts\n")
 	}
 	var prices []float64
 	for _, axie := range result.Data.Axies.Results {
@@ -340,7 +368,7 @@ func ParseTransferHistoryNft(data []byte) PriceHistory {
 	var result JsonBlobTransferHistory
 	json.Unmarshal([]byte(data), &result)
 	if result.Data.Axie.TransferHistory.Results == nil {
-		fmt.Printf("Error. Empty response from the market api\n")
+		fmt.Printf("No transfer history\n")
 	}
 	var history PriceHistory
 	for _, transfer := range result.Data.Axie.TransferHistory.Results {

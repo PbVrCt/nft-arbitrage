@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"sort"
 	"time"
@@ -14,7 +15,6 @@ var post_queque = make(chan int, 10)             // Input channel
 var responses_queque = make(chan []AxieInfo, 10) // Output channel
 const NTHREADS = 1                               // Number of threads in the worker pool doing requests ; NTHREADS < cap(post_queque)
 const MTHREADS = 20                              // Number of threads in the worker pool calling Python ; MTHREADS < cap(response_queque)
-const PAGES_TO_SCAN = 4                          // Each page shows 100 nfts
 var URL string = "https://axieinfinity.com/graphql-server-v2/graphql"
 var bargains = make(map[int]bool)
 
@@ -26,8 +26,9 @@ var python_api_client = &http.Client{Timeout: time.Second * 10}
 // var external_api_proxy_client = &http.Client{Transport: transport, Timeout: time.Second * 10}
 
 func main() {
-	InitConfig() // Loads env variables in the global_env.go file
-	go get_data()
+	LoadEnv()
+	// go get_data(query_latest, 2)
+	go get_data(query_brief_list, 30)
 	go predict_on_batches()
 	select {} // So the script runs until cancelled
 }
@@ -46,6 +47,7 @@ func predict_on_batches() {
 				} else {
 					fmt.Printf("Error getting data from go channel")
 				}
+				time.Sleep(time.Duration(rand.Intn(250)+250) * time.Millisecond) // To avoid getting blocked by the api if not using proxies
 			}
 		}()
 	}
@@ -53,32 +55,35 @@ func predict_on_batches() {
 
 // 2 step filer: 1) price vs ML price prediction 2) price vs market prices
 func notify_if_cheap(nft AxieInfoEngineered) {
-	if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.PriceUSD+200 && nft.PriceUSD > 50 {
+	if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.PriceUSD+150 && nft.PriceUSD > 50 {
 		bargains[nft.Id] = true
-
 		start := time.Now()
-		current_prices, price_history := price_info(nft) // 1 request + (1 request -> 5 requests) = 7 requests
+		var prices_ch = make(chan []float64)
+		var history_ch = make(chan PriceHistory)
+		go get_current_listings(nft, prices_ch) // 1 request
+		go get_price_history(nft, history_ch)   // 1 -> 5 requests
+		current_prices := <-prices_ch
+		price_history := <-history_ch
 		elapsed := time.Since(start)
 		fmt.Printf("Price_info took: %s \n", elapsed)
-
 		sort.Float64s(current_prices)
-		var second_lowest = 10.0000
-		if len(current_prices) > 1 {
-			second_lowest = current_prices[1]
-		}
-		// sort.Sort(SortByPrice(price_history))
-		// var second_lowest_historical = 10.000
-		// if len(price_history.Prices) > 1 {
-		// 	second_lowest_historical = price_history.Prices[1]
-		// }
-		if second_lowest > 0.01+(nft.PriceBy100*0.01) { //&& second_lowest_historical > (nft.PriceBy100*0.01)
-			go notify_discord(nft, current_prices, price_history)
+		sort.Sort(SortByPrice(price_history))
+		switch {
+		case len(current_prices) > 1:
+			if current_prices[1] > 0.02+(nft.PriceBy100*0.01) {
+				go notify_discord(nft, current_prices, price_history)
+			}
+		case len(price_history.Prices) > 0:
+			last_sale_timecutoff, _ := time.Parse("2006-01-02", "2021-09-15")
+			if price_history.Prices[0] > (nft.PriceBy100*0.01) && price_history.Timestamps[0].After(last_sale_timecutoff) {
+				go notify_discord(nft, current_prices, price_history)
+			}
 		}
 	}
 }
 
 // Sends the data in JSON format to a Python server through a Flask API. Then,
-// the feature engineering, model serving and predictions are done in Python, and the results are returned as a JSON
+// the feature engineering, model serving and predictions are done in Python, and the results are returned to Go
 func feature_engineer_and_predict(batch []AxieInfo) []AxieInfoEngineered {
 	b, _ := json.Marshal(batch)
 	request, _ := http.NewRequest("POST", "http://localhost:5000/api/predict", bytes.NewBuffer(b))
@@ -100,11 +105,11 @@ func feature_engineer_and_predict(batch []AxieInfo) []AxieInfoEngineered {
 	return batch_results
 }
 
-func get_data() {
+func get_data(query string, pages_to_scan int) {
 	// Adds jobs to post_queque on an infinite loop
 	go func() {
 		for {
-			for i := 0; i < PAGES_TO_SCAN; i++ {
+			for i := 0; i < pages_to_scan; i++ {
 				post_queque <- i
 			}
 		}
@@ -118,25 +123,20 @@ func get_data() {
 					fmt.Printf("Exiting thread")
 					return
 				}
-				get_data_batch(i)
+				get_data_batch(i, query)
 			}
 		}()
 	}
 }
 
 // Gets data from a single post request to the external API
-func get_data_batch(page int) {
-	var body RequestBody = CreateBody(page * 100)
+func get_data_batch(page int, query string) {
+	var body RequestBody = CreateBody(page*100, query)
 	data := PostRequest(&body, external_api_client)
 	var result JsonBlob
 	var batch []AxieInfo
-	var bool_err bool
 	json.Unmarshal([]byte(data), &result)
-	batch, bool_err = ExtractBatchInfo(result)
-	if bool_err {
-		fmt.Printf("Error. Empty responses from the market api\n")
-		return
-	}
+	batch = ExtractBatchInfo(result)
 	if cap(batch) < 128 {
 		fmt.Printf("Response from the market api doesn't have the adeaquate length\n")
 		return

@@ -1,10 +1,9 @@
-# Figure out if able to scan not recently listed nfts. Use postman to explore possible queries
-# Figure out if able to modify base requests to get more fields
+# Add middleware to handle connection timeouts
+# Retrieve data from s3 using Go
 
-# Do the data collection in go (cheaper to run on cloud)
-# Move data collection into a container -> Upload to aws ElasticContainerService
-# Collect data with Eth prices -> Use Eth prices as training labels (Adapt data cleansing, buy Conditions and Discord Notifications)
-https://stackoverflow.com/questions/64619970/preventing-context-deadline-exceeded-client-timeout-exceeded-while-awaiting-hea
+# Containarize data collection
+# Upload data collection to aws ElasticContainerService
+# Use Eth prices as training labels (Adapt data cleansing, buy Conditions and Discord Notifications)
 
 # Move the training to sagemaker?
 # Make a revenue dashboard using streamlit? Serve through aws?
