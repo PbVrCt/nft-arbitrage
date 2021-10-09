@@ -7,8 +7,8 @@ import pandas as pd
 import tensorflow as tf
 import keras_tuner as kt
 
-from _2_model_training._NNmodel import NNmodel
-from _2_model_training.reduce_mem_usage import reduce_mem_usage
+from _4_model_training._NNmodel import NNmodel
+from _4_model_training.reduce_mem_usage import reduce_mem_usage
 
 # Load the data
 df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
@@ -16,26 +16,26 @@ df = reduce_mem_usage(df)
 # Split in sets
 train_features = (
     df.iloc[: -int(df.shape[0] * 0.3)]
-    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD"])]
     .to_numpy()
 )
-train_labels = df.iloc[: -int(df.shape[0] * 0.3)].loc[:, "Price"].to_numpy()
+train_labels = df.iloc[: -int(df.shape[0] * 0.3)].loc[:, "PriceBy100"].to_numpy()
 val_features = (
     df.iloc[-int(df.shape[0] * 0.3) : -int(df.shape[0] * 0.1)]
-    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD"])]
     .to_numpy()
 )
 val_labels = (
     df.iloc[-int(df.shape[0] * 0.3) : -int(df.shape[0] * 0.1)]
-    .loc[:, "Price"]
+    .loc[:, "PriceBy100"]
     .to_numpy()
 )
 test_features = (
     df.iloc[-int(df.shape[0] * 0.1) :]
-    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
+    .loc[:, df.columns.difference(["Priceby100", "PriceUSD"])]
     .to_numpy()
 )
-test_labels = df.iloc[-int(df.shape[0] * 0.1) :].loc[:, "Price"].to_numpy()
+test_labels = df.iloc[-int(df.shape[0] * 0.1) :].loc[:, "PriceBy100"].to_numpy()
 # Define the model: NN
 hypermodel = NNmodel()
 # Find optimal hyperparameters
@@ -122,6 +122,6 @@ best_model.summary()
 # print("[test loss, test metrics]:", result)
 
 # # Save the model
-best_model.save("_2_model_training/_NN.tf")
-# with open("_2_model_training/_NN.pickle", "wb") as f:  # try with _NN.tf
+best_model.save("_4_model_training/_NN.tf")
+# with open("_4_model_training/_NN.pickle", "wb") as f:  # try with _NN.tf
 #     pickle.dump(best_model, f)

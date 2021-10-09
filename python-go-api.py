@@ -7,22 +7,22 @@ import numpy as np
 from flask import Flask, redirect, request, jsonify, make_response, send_file
 from flask_restful import Resource, Api, abort
 
-from _1_preprocessing.feature_eng_utils import preprocessing_fn
+from _3_preprocessing.feature_eng_utils import preprocessing_fn
 
 # Model
-with open("./_2_model_training/_GBM.pkl", "rb") as f:
+with open("./_4_model_training/_GBM2.pkl", "rb") as f:
     model = pickle.load(f)
 # from tensorflow.keras.models import load_model # Tensorflow's "model.predict()" is too slow
 # model = load_model("./_2_model_training/_NN.tf")
 
 # One hot encoder
-with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
+with open("./_3_preprocessing/one_hot_encoder.pickle", "rb") as f:
     oh_enc = pickle.load(f)
 # Scaler
-with open("./_1_preprocessing/scaler.pickle", "rb") as f:
+with open("./_3_preprocessing/scaler.pickle", "rb") as f:
     scaler = pickle.load(f)
 # Card and combo scores
-with open("./_1_preprocessing/combo_scores.txt") as f:
+with open("./_3_preprocessing/combo_scores.txt") as f:
     for i in f.readlines():
         combo_scores = i
 combo_scores = eval(combo_scores)

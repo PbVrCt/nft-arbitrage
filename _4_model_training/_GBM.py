@@ -9,22 +9,18 @@ from sklearn import pipeline
 import matplotlib.pyplot as plt
 
 
-from _2_model_training.reduce_mem_usage import reduce_mem_usage
+from _4_model_training.reduce_mem_usage import reduce_mem_usage
 
-df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
+df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0, 1])
 df = reduce_mem_usage(df)
 features = (
-    df.iloc[:-3000]
-    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
-    .to_numpy()
+    df.iloc[:-10].loc[:, df.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
 )
-labels = df.iloc[:-3000].loc[:, "Price"].to_numpy()
+labels = df.iloc[:-10].loc[:, "PriceBy100"].to_numpy()
 test_features = (
-    df.iloc[-3000:]
-    .loc[:, df.columns.difference(["Priceby100", "PriceUSD", "Price"])]
-    .to_numpy()
+    df.iloc[-10:].loc[:, df.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
 )
-test_labels = df.iloc[-3000:].loc[:, "Price"].to_numpy()
+test_labels = df.iloc[-10:].loc[:, "PriceBy100"].to_numpy()
 
 # Define the model: Gradient Boosting Machine
 class GBM(kt.HyperModel):
@@ -81,7 +77,7 @@ best_model.fit(features, labels)
 # Feature importances
 feat_imp = pd.Series(
     best_model.feature_importances_,
-    index=df.loc[:, df.columns != "Price"].columns,
+    index=df.loc[:, df.columns.difference(["PriceBy100", "PriceUSD"])].columns,
 )
 feat_imp.nlargest(20).plot(kind="barh", figsize=(10, 6))
 plt.tight_layout()
@@ -97,7 +93,7 @@ print(
 )
 
 # Save the model
-with open("_2_model_training/_GBM.pkl", "wb") as f:
+with open("_4_model_training/_GBM2.pkl", "wb") as f:
     pickle.dump(best_model, f)
 
 plt.show()

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -10,6 +11,8 @@ import (
 	"strings"
 	"time"
 )
+
+// TODO: Parse genes and pureness fields
 
 // DEFINE REQUESTS
 func CreateBody(from int, query string) RequestBody {
@@ -39,6 +42,7 @@ fragment AxieBrief on Axie {
   breedCount
   image
   genes
+  pureness
   auction {
     currentPrice
     currentPriceUSD
@@ -69,6 +73,7 @@ fragment AxieBrief on Axie {
   breedCount
   image
   genes
+  pureness
   auction {
     currentPrice
     currentPriceUSD
@@ -115,9 +120,10 @@ type Criteria struct {
 }
 
 // DO REQUESTS
-func PostRequest(body interface{}, client *http.Client) []byte {
+func PostRequest(body interface{}, client *http.Client) ([]byte, error) {
 	b, _ := json.Marshal(body)
 	request, _ := http.NewRequest("POST", URL, bytes.NewBuffer(b))
+
 	request.Header.Set("Content-Type", "application/json")
 	parseFormErr := request.ParseForm()
 	if parseFormErr != nil {
@@ -126,13 +132,14 @@ func PostRequest(body interface{}, client *http.Client) []byte {
 	response, err := client.Do(request)
 	if err != nil {
 		fmt.Printf("The HTTP request failed with error: %s\n", err)
+		return []byte(""), errors.New("failed request")
 	}
 	defer response.Body.Close()
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Printf("Error reading response from a request: %s\n", err)
 	}
-	return data
+	return data, nil
 }
 
 // RESPONSES FORMAT
@@ -147,6 +154,7 @@ type Axie struct {
 	Id         string     `json:"id,omitempty"`
 	Class      string     `json:"class,omitempty"`
 	BreedCount int        `json:"breedCount,omitempty"`
+	Genes      string     `json:"genes,omitempty"`
 	Image      string     `json:"image,omitempty"`
 	Auction    Auction    `json:"auction,omitempty"`
 	BattleInfo BattleInfo `json:"battleInfo,omitempty"`
@@ -186,6 +194,7 @@ func ExtractAxieInfo(ax Axie) AxieInfo {
 	axie.PriceBy100 = price * 1e-16
 	axie.PriceUSD, _ = strconv.ParseFloat(ax.Auction.CurrentPriceUSD, 32)
 	axie.BreedCount = ax.BreedCount
+	axie.Genes = ax.Genes
 	axie.Eyes = ax.Parts[0].Name
 	axie.Ears = ax.Parts[1].Name
 	axie.Back = ax.Parts[2].Name
@@ -208,6 +217,7 @@ type AxieInfo struct {
 	PriceBy100 float64
 	PriceUSD   float64
 	BreedCount int
+	Genes      string
 	Eyes       string
 	Ears       string
 	Back       string

@@ -3,24 +3,22 @@ import pickle
 
 import pandas as pd
 
-from _1_preprocessing.feature_eng_utils import (
+from _3_preprocessing.feature_eng_utils import (
     generate_combo_scores,
     fit_one_hot_encoder,
     preprocessing_fn,
 )
 
 # Load the data
-leaderboard = pd.read_csv("./_0_get_data_leaderboard/leaderboard.csv")
-df = pd.read_csv(f"./data/full_cleansed.csv", index_col=[0]).set_index(
-    ["Id"]
-)  # Figure out where the col 0 comes from
+leaderboard = pd.read_csv("./_0_data_collection_leaderboard/leaderboard.csv")
+df = pd.read_csv(f"./data/full_cleansed.csv", index_col=[0, 1])
 
 # Calculate combo scores
 combo_scores = generate_combo_scores(leaderboard)
-with open("./_1_preprocessing/combo_scores.txt", "w") as f:
+with open("./_3_preprocessing/combo_scores.txt", "w") as f:
     f.write(str(combo_scores))
 
-# # Check if the feature engineering is done fast enough for real time inference
+# Check if the feature engineering is done fast enough for real time inference
 start = time.time()
 row = preprocessing_fn(
     df.iloc[-100:, :], combo_scores, fit_scaler=True, fit_encoder=True

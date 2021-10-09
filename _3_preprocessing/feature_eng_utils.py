@@ -5,7 +5,7 @@ import pickle
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 
-from _1_preprocessing.feature_eng_utils2 import (
+from _3_preprocessing.feature_eng_utils2 import (
     class_stats,
     part_stats,
     card_scores,
@@ -108,13 +108,13 @@ def fit_one_hot_encoder(df, columns_to_encode):
     enc = OneHotEncoder(handle_unknown="ignore").fit(
         df.loc[:, columns_to_encode].to_numpy()
     )
-    with open("./_1_preprocessing/one_hot_encoder.pickle", "wb") as f:
+    with open("./_3_preprocessing/one_hot_encoder.pickle", "wb") as f:
         pickle.dump(enc, f)
 
 
 def fit_save_scaler(df, columns_to_fit):
     scaler = MinMaxScaler().fit(df.loc[:, columns_to_fit].to_numpy())
-    with open("./_1_preprocessing/scaler.pickle", "wb") as f:
+    with open("./_3_preprocessing/scaler.pickle", "wb") as f:
         pickle.dump(scaler, f)
 
 
@@ -173,7 +173,7 @@ def preprocessing_fn(
     # columns = ["Class"]
     if fit_encoder == True:
         fit_one_hot_encoder(df, columns)
-        with open("./_1_preprocessing/one_hot_encoder.pickle", "rb") as f:
+        with open("./_3_preprocessing/one_hot_encoder.pickle", "rb") as f:
             encoder = pickle.load(f)
     ohe = encoder.transform(df.loc[:, columns].to_numpy()).toarray()
     ohe_df = pd.DataFrame(ohe, columns=encoder.get_feature_names(columns)).astype(int)
@@ -184,7 +184,7 @@ def preprocessing_fn(
     # columns = ["card_score"]
     if fit_scaler == True:
         fit_save_scaler(df, columns)
-        with open("./_1_preprocessing/scaler.pickle", "rb") as f:
+        with open("./_3_preprocessing/scaler.pickle", "rb") as f:
             scaler = pickle.load(f)
     df.loc[:, columns] = scaler.transform(df.loc[:, columns].to_numpy())
     return df

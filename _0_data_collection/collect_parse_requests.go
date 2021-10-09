@@ -3,10 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 // DEFINE REQUESTS
@@ -111,9 +113,10 @@ type Criteria struct {
 }
 
 // DO REQUESTS
-func PostRequest(body interface{}, client *http.Client) []byte {
+func PostRequest(body interface{}, client *http.Client) ([]byte, error) {
 	b, _ := json.Marshal(body)
 	request, _ := http.NewRequest("POST", URL, bytes.NewBuffer(b))
+
 	request.Header.Set("Content-Type", "application/json")
 	parseFormErr := request.ParseForm()
 	if parseFormErr != nil {
@@ -122,13 +125,14 @@ func PostRequest(body interface{}, client *http.Client) []byte {
 	response, err := client.Do(request)
 	if err != nil {
 		fmt.Printf("The HTTP request failed with error: %s\n", err)
+		return []byte(""), errors.New("failed request")
 	}
 	defer response.Body.Close()
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Printf("Error reading response from a request: %s\n", err)
 	}
-	return data
+	return data, nil
 }
 
 // RESPONSES FORMAT
@@ -175,6 +179,7 @@ func ExtractBatchInfo(blob JsonBlob) []AxieInfo {
 
 func ExtractAxieInfo(ax Axie) AxieInfo {
 	var axie AxieInfo
+	axie.Date = time.Now().Format(time.RFC3339)
 	axie.Id, _ = strconv.Atoi(ax.Id)
 	axie.Class = ax.Class
 	price, _ := strconv.ParseFloat(ax.Auction.CurrentPrice, 32)
@@ -198,9 +203,9 @@ func ExtractAxieInfo(ax Axie) AxieInfo {
 }
 
 type AxieInfo struct {
+	Date       string
 	Id         int
 	Class      string
-	Image      string
 	PriceBy100 float64
 	PriceUSD   float64
 	BreedCount int

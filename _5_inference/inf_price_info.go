@@ -8,7 +8,7 @@ import (
 
 func get_current_listings(nft AxieInfoEngineered, prices_ch chan []float64) {
 	var body RequestBody = CreateBodyIdenticalNfts(nft, true, 7)
-	data := PostRequest(&body, external_api_client)
+	data, _ := PostRequest(&body, external_api_client)
 	prices := ParsePricesIdenticalNfts(data)
 	prices_ch <- prices
 }
@@ -16,7 +16,7 @@ func get_current_listings(nft AxieInfoEngineered, prices_ch chan []float64) {
 func get_price_history(nft AxieInfoEngineered, full_history_ch chan PriceHistory) {
 	// Get list of identical nfts not on sale
 	var body RequestBody = CreateBodyIdenticalNfts(nft, false, 4)
-	data := PostRequest(&body, external_api_client)
+	data, _ := PostRequest(&body, external_api_client)
 	ids := ParseIdsIdenticalNfts(data)
 	// Add the transfer history of each identical nft to a struct
 	var history_ch = make(chan PriceHistory)
@@ -37,7 +37,7 @@ func get_price_history(nft AxieInfoEngineered, full_history_ch chan PriceHistory
 		go func(nft_id int) {
 			defer wg.Done()
 			var bd RequestBodyTransferHistory = CreateBodyTransferHistory(nft_id)
-			data := PostRequest(&bd, external_api_client)
+			data, _ := PostRequest(&bd, external_api_client)
 			transfer_history_nft := ParseTransferHistoryNft(data)
 			history_ch <- transfer_history_nft
 		}(nft_id)

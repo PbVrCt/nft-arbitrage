@@ -55,7 +55,7 @@ func predict_on_batches() {
 
 // 2 step filer: 1) price vs ML price prediction 2) price vs market prices
 func notify_if_cheap(nft AxieInfoEngineered) {
-	if _, ok := bargains[nft.Id]; !ok && nft.Prediction > nft.PriceUSD+150 && nft.PriceUSD > 50 {
+	if _, ok := bargains[nft.Id]; !ok && nft.Prediction > (nft.PriceBy100*0.01)+0.03 && nft.PriceUSD > 50 {
 		bargains[nft.Id] = true
 		start := time.Now()
 		var prices_ch = make(chan []float64)
@@ -132,7 +132,10 @@ func get_data(query string, pages_to_scan int) {
 // Gets data from a single post request to the external API
 func get_data_batch(page int, query string) {
 	var body RequestBody = CreateBody(page*100, query)
-	data := PostRequest(&body, external_api_client)
+	data, err := PostRequest(&body, external_api_client)
+	if err != nil {
+		return
+	}
 	var result JsonBlob
 	var batch []AxieInfo
 	json.Unmarshal([]byte(data), &result)

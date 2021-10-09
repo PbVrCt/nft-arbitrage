@@ -3,7 +3,7 @@ import json
 from great_expectations import get_context
 from great_expectations.core.expectation_configuration import ExpectationConfiguration
 
-from _0_get_data.queries import tail_parts, back_parts, horn_parts, mouth_parts
+from _2_data_tests.parts import tail_parts, back_parts, horn_parts, mouth_parts
 
 context = get_context()
 
@@ -14,7 +14,7 @@ suite1 = context.create_expectation_suite(
 # Expectation 1
 expt_config = ExpectationConfiguration(
     expectation_type="expect_table_row_count_to_be_between",
-    kwargs={"min_value": 1500, "max_value": None},
+    kwargs={"min_value": 300, "max_value": None},
 )
 # Save suite
 suite1.add_expectation(expectation_configuration=expt_config)
@@ -39,7 +39,7 @@ class_types = [
     "Dusk",
 ]
 expt_config = ExpectationConfiguration(
-    expectation_type="expect_column_distinct_values_to_equal_set",
+    expectation_type="expect_column_distinct_values_to_be_in_set",
     kwargs={"column": "Class", "value_set": class_types},
 )
 suite2.add_expectation(expectation_configuration=expt_config)
@@ -84,17 +84,18 @@ for column in ["Id", "BreedCount"]:
     )
     suite2.add_expectation(expectation_configuration=expt_config)
 # Expectation 6
-expt_config = ExpectationConfiguration(
-    expectation_type="expect_column_values_to_not_be_null",
-    kwargs={"column": "Price", "mostly": 1},
-)
-suite2.add_expectation(expectation_configuration=expt_config)
-# Expectation 7
-expt_config = ExpectationConfiguration(
-    expectation_type="expect_column_values_to_be_of_type",
-    kwargs={"column": "Price", "type_": "float64"},
-)
-suite2.add_expectation(expectation_configuration=expt_config)
+for column in ["PriceBy100","PriceUSD"]:
+    expt_config = ExpectationConfiguration(
+        expectation_type="expect_column_values_to_not_be_null",
+        kwargs={"column": column, "mostly": 1},
+    )
+    suite2.add_expectation(expectation_configuration=expt_config)
+    # Expectation 7
+    expt_config = ExpectationConfiguration(
+        expectation_type="expect_column_values_to_be_of_type",
+        kwargs={"column": column, "type_": "float64"},
+    )
+    suite2.add_expectation(expectation_configuration=expt_config)
 # Save suite
 context.save_expectation_suite(
     expectation_suite=suite2, expectation_suite_name="suite2"

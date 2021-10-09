@@ -17,7 +17,7 @@ func notify_discord(nft AxieInfoEngineered, current_prices []float64, price_hist
 		URL:         fmt.Sprint("https://marketplace.axieinfinity.com/axie/", nft.Id),
 		Author:      &discordgo.MessageEmbedAuthor{},
 		Color:       0x00ff00, // Green
-		Description: "Precio:" + fmt.Sprintf("%.0f", nft.PriceUSD) + "\nPredicción:" + fmt.Sprintf("%.0f", nft.Prediction) + "\nEth: " + fmt.Sprintf("%.3f", nft.PriceBy100*0.01),
+		Description: "Precio USD:" + fmt.Sprintf("%.0f", nft.PriceUSD) + "\nPrecio: " + fmt.Sprintf("%.3f", nft.PriceBy100*0.01) + "\nPredicción:" + fmt.Sprintf("%.3f", nft.Prediction*0.01),
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   "Precios",
@@ -74,7 +74,7 @@ func notify_discord_no_history(nft AxieInfoEngineered, current_prices []float64)
 		URL:         fmt.Sprint("https://marketplace.axieinfinity.com/axie/", nft.Id),
 		Author:      &discordgo.MessageEmbedAuthor{},
 		Color:       0x00ff00, // Green
-		Description: "Precio:" + fmt.Sprintf("%.0f", nft.PriceUSD) + "\nPredicción:" + fmt.Sprintf("%.0f", nft.Prediction) + "\nEth: " + fmt.Sprintf("%.3f", nft.PriceBy100*0.01),
+		Description: "Precio USD:" + fmt.Sprintf("%.0f", nft.PriceUSD) + "\nPrecio: " + fmt.Sprintf("%.3f", nft.PriceBy100*0.01) + "\nPredicción:" + fmt.Sprintf("%.0f", nft.Prediction*0.01),
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   "Precios",

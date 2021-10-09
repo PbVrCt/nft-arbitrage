@@ -2,27 +2,30 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-var URL string = "https://axieinfinity.com/graphql-server-v2/graphql"
-var external_api_client = &http.Client{Timeout: time.Second * 10}
+const URL = "https://axieinfinity.com/graphql-server-v2/graphql"
+const DATE_LAYOUT = "2006-01-02T15:04:05Z07:00"
 
-const DATE_LAYOUT = "02 Jan 06 15:04 MST"
+var client = &http.Client{Timeout: time.Second * 10}
+var awsS3Client *s3.Client
 
 func main() {
 	LoadEnv()
 	data := GetData(query_brief_list, 2)
-	var sess = ConnectAws()
-	SaveData(sess, data, "-suffix")
+	configS3()
+	SaveData(data, ".json")
 }
 
 func GetData(query string, pages_to_scan int) []AxieInfo {
@@ -38,35 +41,34 @@ func GetData(query string, pages_to_scan int) []AxieInfo {
 // Gets data from a single post request to the external API
 func get_data_batch(page int, query string) []AxieInfo {
 	var body RequestBody = CreateBody(page*100, query)
-	data := PostRequest(&body, external_api_client)
-	var result JsonBlob
 	var batch []AxieInfo
+	data, err := PostRequest(&body, client)
+	if err != nil {
+		return []AxieInfo{}
+	}
+	var result JsonBlob
 	json.Unmarshal([]byte(data), &result)
 	batch = ExtractBatchInfo(result)
 	return batch
 }
 
-func ConnectAws() *session.Session {
-	sess, err := session.NewSession(
-		&aws.Config{
-			Region:      aws.String(AWS_REGION),
-			Credentials: credentials.NewStaticCredentials(AWS_KEY_ID, AWS_KEY_PASS, ""),
-		})
+func configS3() {
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(AWS_REGION))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	return sess
+	awsS3Client = s3.NewFromConfig(cfg)
 }
 
-func SaveData(sess *session.Session, data []AxieInfo, filename_suffix string) {
+func SaveData(data []AxieInfo, filename_suffix string) {
 	t := time.Now()
 	name := fmt.Sprint(t.Format(DATE_LAYOUT)) + filename_suffix
 	d, _ := json.Marshal(data)
-	uploader := s3manager.NewUploader(sess)
-	_, err := uploader.Upload(&s3manager.UploadInput{
+	uploader := manager.NewUploader(awsS3Client)
+	_, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(BUCKET_NAME),
 		Key:    aws.String(name),
-		Body:   aws.ReadSeekCloser(bytes.NewReader(d)),
+		Body:   manager.ReadSeekCloser(bytes.NewReader(d)),
 	})
 	if err != nil {
 		panic(err)

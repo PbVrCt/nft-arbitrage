@@ -1,9 +1,7 @@
-# Add middleware to handle connection timeouts
-# Retrieve data from s3 using Go
-
+# Respond to proxy api support with minimal reproducible example
 # Containarize data collection
+
 # Upload data collection to aws ElasticContainerService
-# Use Eth prices as training labels (Adapt data cleansing, buy Conditions and Discord Notifications)
 
 # Move the training to sagemaker?
 # Make a revenue dashboard using streamlit? Serve through aws?
