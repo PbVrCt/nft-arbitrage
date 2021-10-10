@@ -79,6 +79,30 @@ def assign_multiplier_score(row):
     return score
 
 
+def assign_gene_quality(row):
+    if row["Class"] in ["Dusk", "Mech", "Dawn"]:
+        return 0.5
+    gene_quality = 0.0
+    genes = str(bin(int(row["Genes"], base=16)))[2:].zfill(256)  # hex to binary
+    classs = genes[0:4]
+    # Eyes, Mouth, Ears, Horn, Back, Tail
+    for part in [
+        genes[64:96],
+        genes[96:128],
+        genes[128:160],
+        genes[160:192],
+        genes[192:224],
+        genes[224:256],
+    ]:
+        if part[2:6] == classs:  # dclass
+            gene_quality += 76.0 / 6
+        if part[12:16] == classs:  # r1class
+            gene_quality += 3
+        if part[22:26] == classs:  # r2class
+            gene_quality += 1
+    return round(gene_quality * 100) / 10000
+
+
 def assign_stats(row):
     stats = class_stats[row["Class"]]
     for column in [
@@ -142,7 +166,7 @@ def preprocessing_fn(
     df.loc[:, "build_score"] = df.apply(
         lambda df: assign_combo_score(df, scores_lookup, build), axis=1
     )
-
+    df.loc[:, "gene_quality"] = df.apply(assign_gene_quality, axis=1)
     df.loc[:, "stats"] = df.apply(assign_stats, axis=1)
     df[["Hp", "Sp", "Sk", "Mr"]] = pd.DataFrame(df.stats.tolist(), index=df.index)
     df.drop("stats", axis=1, inplace=True)
@@ -188,3 +212,23 @@ def preprocessing_fn(
             scaler = pickle.load(f)
     df.loc[:, columns] = scaler.transform(df.loc[:, columns].to_numpy())
     return df
+
+
+# const _parseQualityAndPureness = (genes) => {
+#     const PART_QUALITY = { D: 76 / 6, R1: 3, R2: 1 };
+#     const MAX_QUALITY = 6 * (PART_QUALITY.D + PART_QUALITY.R1 + PART_QUALITY.R2);
+
+#     let pureness = 0,
+#         quality = 0;
+
+#     for (const part of Object.keys(genes.parts)) {
+#         for (const [k, { class: cls }] of Object.entries(genes.parts[part])) {
+#             if (["D", "R1", "R2"].includes(k)) {
+#                 if (k === "D" && genes.class === cls) pureness++;
+#                 if (genes.class === cls) quality += PART_QUALITY[k];
+#             }
+#         }
+#     }
+
+#     return { ...genes, pureness, quality: quality / MAX_QUALITY };
+# };

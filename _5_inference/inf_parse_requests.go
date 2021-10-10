@@ -234,19 +234,20 @@ type AxieInfo struct {
 
 // RESPONSE FORMAT FROM THE PYTHON SERVER
 type AxieInfoEngineered struct {
-	Id         int     `json:"Id"`
-	Class      string  `json:"Class"`
-	Image      string  `json:"Image"`
-	PriceUSD   float64 `json:"PriceUSD"`
-	PriceBy100 float64 `json:"PriceBy100"`
-	Prediction float64 `json:"Prediction"`
-	BreedCount int     `json:"BreedCount"`
-	Eyes       string  `json:"Eyes"`
-	Ears       string  `json:"Ears"`
-	Back       string  `json:"Back"`
-	Mouth      string  `json:"Mouth"`
-	Horn       string  `json:"Horn"`
-	Tail       string  `json:"Tail"`
+	Id          int     `json:"Id"`
+	Class       string  `json:"Class"`
+	Image       string  `json:"Image"`
+	PriceUSD    float64 `json:"PriceUSD"`
+	PriceBy100  float64 `json:"PriceBy100"`
+	Prediction  float64 `json:"Prediction"`
+	BreedCount  int     `json:"BreedCount"`
+	GeneQuality float64 `json:"gene_quality"`
+	Eyes        string  `json:"Eyes"`
+	Ears        string  `json:"Ears"`
+	Back        string  `json:"Back"`
+	Mouth       string  `json:"Mouth"`
+	Horn        string  `json:"Horn"`
+	Tail        string  `json:"Tail"`
 }
 
 // DEFINE REQUESTS IDENTICAL NFTS

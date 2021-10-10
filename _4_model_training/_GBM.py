@@ -14,13 +14,13 @@ from _4_model_training.reduce_mem_usage import reduce_mem_usage
 df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0, 1])
 df = reduce_mem_usage(df)
 features = (
-    df.iloc[:-10].loc[:, df.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
+    df.iloc[:-500].loc[:, df.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
 )
-labels = df.iloc[:-10].loc[:, "PriceBy100"].to_numpy()
+labels = df.iloc[:-500].loc[:, "PriceBy100"].to_numpy()
 test_features = (
-    df.iloc[-10:].loc[:, df.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
+    df.iloc[-500:].loc[:, df.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
 )
-test_labels = df.iloc[-10:].loc[:, "PriceBy100"].to_numpy()
+test_labels = df.iloc[-500:].loc[:, "PriceBy100"].to_numpy()
 
 # Define the model: Gradient Boosting Machine
 class GBM(kt.HyperModel):

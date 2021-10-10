@@ -23,7 +23,7 @@ var awsS3Client *s3.Client
 
 func main() {
 	LoadEnv()
-	data := GetData(query_brief_list, 2)
+	data := GetData(query_brief_list, 100)
 	configS3()
 	SaveData(data, ".json")
 }
@@ -33,7 +33,7 @@ func GetData(query string, pages_to_scan int) []AxieInfo {
 	for i := 0; i < pages_to_scan; i++ {
 		batch := get_data_batch(i, query)
 		data = append(data, batch...)
-		fmt.Printf("%d", i)
+		fmt.Printf("%d\n", i)
 	}
 	return data
 }

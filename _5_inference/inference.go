@@ -28,7 +28,7 @@ var python_api_client = &http.Client{Timeout: time.Second * 10}
 func main() {
 	LoadEnv()
 	// go get_data(query_latest, 2)
-	go get_data(query_brief_list, 30)
+	go get_data(query_brief_list, 15)
 	go predict_on_batches()
 	select {} // So the script runs until cancelled
 }
@@ -55,7 +55,7 @@ func predict_on_batches() {
 
 // 2 step filer: 1) price vs ML price prediction 2) price vs market prices
 func notify_if_cheap(nft AxieInfoEngineered) {
-	if _, ok := bargains[nft.Id]; !ok && nft.Prediction > (nft.PriceBy100*0.01)+0.03 && nft.PriceUSD > 50 {
+	if _, ok := bargains[nft.Id]; !ok && (nft.Prediction*0.01) > (nft.PriceBy100*0.01)+0.03 && nft.PriceUSD > 50 {
 		bargains[nft.Id] = true
 		start := time.Now()
 		var prices_ch = make(chan []float64)

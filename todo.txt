@@ -7,3 +7,4 @@
 # Make a revenue dashboard using streamlit? Serve through aws?
 # Move the inference to kinesis? In that case check the record weights in kinesis
 # Try Pytorch? Tensorflow's model.predict is too slow for the inference
+# Build database with auction prices?

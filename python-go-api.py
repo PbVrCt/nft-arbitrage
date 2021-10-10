@@ -47,6 +47,7 @@ class NewR(Resource):
                 "Mouth",
                 "Horn",
                 "Tail",
+                "BreedCount",
                 "Image",
                 "PriceBy100",
                 "PriceUSD",
@@ -81,7 +82,7 @@ class NewR(Resource):
                 [
                     basic_info,
                     price_predictions,
-                    df["BreedCount"],
+                    df["gene_quality"],
                 ],
                 axis=1,
             )

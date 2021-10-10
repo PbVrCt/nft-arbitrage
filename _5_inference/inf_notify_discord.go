@@ -49,6 +49,11 @@ func notify_discord(nft AxieInfoEngineered, current_prices []float64, price_hist
 				Value:  fmt.Sprint(nft.BreedCount),
 				Inline: true,
 			},
+			{
+				Name:   "Gene Quality",
+				Value:  fmt.Sprintf("%.2f", nft.GeneQuality),
+				Inline: true,
+			},
 		},
 		Image: &discordgo.MessageEmbedImage{
 			URL: nft.Image,
