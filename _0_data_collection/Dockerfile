@@ -10,6 +10,7 @@ RUN go mod download
 # Copy the source code. Note the slash at the end, as explained in
 # https://docs.docker.com/engine/reference/builder/#copy
 COPY *.go ./
+COPY .env ./
 
 # Build
 RUN go build -o /collect
@@ -26,4 +27,4 @@ EXPOSE 8080
 #ENV HTTP_PORT=8081
 
 # Run
-CMD [ "/_0_data_collection" ]
+CMD [ "/collect" ]
