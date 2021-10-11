@@ -1,0 +1,26 @@
+# requirements.in
+# discord
+# aiohttp
+# urllib3
+requests
+pandas
+ipykernel
+boto3
+python-dotenv
+scikit-learn
+keras_tuner
+tensorflow
+seaborn
+matplotlib
+scipy
+lightgbm
+numpy
+great-expectations
+flask
+flask-restful
+
+selenium
+cssselect
+lxml
+
+neural-structured-learning

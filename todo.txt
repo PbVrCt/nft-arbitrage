@@ -1,0 +1,10 @@
+# Respond to proxy api support with minimal reproducible example
+# Containarize data collection
+
+# Upload data collection to aws ElasticContainerService
+
+# Move the training to sagemaker?
+# Make a revenue dashboard using streamlit? Serve through aws?
+# Move the inference to kinesis? In that case check the record weights in kinesis
+# Try Pytorch? Tensorflow's model.predict is too slow for the inference
+# Build database with auction prices?
