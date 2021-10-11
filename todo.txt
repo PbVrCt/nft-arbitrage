@@ -1,4 +1,3 @@
-# Respond to proxy api support with minimal reproducible example
 # Containarize data collection
 
 # Upload data collection to aws ElasticContainerService
@@ -8,3 +7,12 @@
 # Move the inference to kinesis? In that case check the record weights in kinesis
 # Try Pytorch? Tensorflow's model.predict is too slow for the inference
 # Build database with auction prices?
+
+
+
+# Project timeline (5 weeks):
+
+# Exploring data collection and data
+# Getting Mininum Viable Product
+# Optimizing models
+# DevOps - Automatizing, leveraging cloud and containers
