@@ -17,7 +17,7 @@ var (
 func LoadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file: ", err)
 	}
 	AWS_REGION = os.Getenv("AWS_REGION")
 	AWS_ACCESS_KEY_ID = os.Getenv("AWS_ACCESS_KEY_ID")

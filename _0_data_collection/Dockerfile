@@ -1,30 +1,34 @@
-FROM golang:1.16-alpine
 
-# Set destination for COPY
+##
+## Build
+##
+
+FROM golang:1.16-buster AS build
+
 WORKDIR /_0_data_collection
-# Download Go modules
-COPY go.mod ./
-COPY go.sum ./
+
+COPY go.mod .
+COPY go.sum .
 RUN go mod download
 
-# Copy the source code. Note the slash at the end, as explained in
-# https://docs.docker.com/engine/reference/builder/#copy
 COPY *.go ./
 COPY .env ./
 
-# Build
 RUN go build -o /collect
 
-# This is for documentation purposes only.
-# To actually open the port, runtime parameters
-# must be supplied to the docker command.
+##
+## Deploy
+##
+
+FROM gcr.io/distroless/base-debian10
+
+WORKDIR /
+
+COPY --from=build /collect /collect
+COPY --from=build /_0_data_collection/.env .
+
 EXPOSE 8080
 
-# (Optional) environment variable that our dockerised
-# application can make use of. The value of environment
-# variables can also be set via parameters supplied
-# to the docker command on the command line.
-#ENV HTTP_PORT=8081
+USER nonroot:nonroot
 
-# Run
-CMD [ "/collect" ]
+CMD ["/collect"]

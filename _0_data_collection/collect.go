@@ -44,7 +44,7 @@ func get_data_batch(page int, query string) []AxieInfo {
 	var batch []AxieInfo
 	data, err := PostRequest(&body, client)
 	if err != nil {
-		return []AxieInfo{}
+		return batch
 	}
 	var result JsonBlob
 	json.Unmarshal([]byte(data), &result)

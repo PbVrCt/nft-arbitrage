@@ -1,6 +1,5 @@
-# Containarize data collection
-
-# Upload data collection to aws ElasticContainerService
+# Upload data collection to aws ElasticContainerService https://docs.docker.com/cloud/ecs-integration/
+# Get data tests to run on the cloud. Connect great expectations to s3 buckets
 
 # Move the training to sagemaker?
 # Make a revenue dashboard using streamlit? Serve through aws?
