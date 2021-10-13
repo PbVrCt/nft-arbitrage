@@ -1,4 +1,4 @@
-# Learn Playwright, if easy, and do custom leaderboard scraping using go -> Run on cloud
+# Do custom leaderboard scraping using seleinum for go? -> Run on cloud
 # Get data tests to run on the cloud ? In that case connect great expectations to s3 buckets
 
 # Move the training to sagemaker?
