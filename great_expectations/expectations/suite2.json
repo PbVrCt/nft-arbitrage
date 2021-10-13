@@ -1,0 +1,375 @@
+{
+  "data_asset_type": null,
+  "expectation_suite_name": "suite2",
+  "expectations": [
+    {
+      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "kwargs": {
+        "column": "Class",
+        "value_set": [
+          "Aquatic",
+          "Beast",
+          "Bird",
+          "Bug",
+          "Plant",
+          "Reptile",
+          "Mech",
+          "Dawn",
+          "Dusk"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "kwargs": {
+        "column": "EyesType",
+        "value_set": [
+          "Aquatic",
+          "Beast",
+          "Bird",
+          "Bug",
+          "Plant",
+          "Reptile"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "kwargs": {
+        "column": "EarsType",
+        "value_set": [
+          "Aquatic",
+          "Beast",
+          "Bird",
+          "Bug",
+          "Plant",
+          "Reptile"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "kwargs": {
+        "column": "BackType",
+        "value_set": [
+          "Aquatic",
+          "Beast",
+          "Bird",
+          "Bug",
+          "Plant",
+          "Reptile"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "kwargs": {
+        "column": "MouthType",
+        "value_set": [
+          "Aquatic",
+          "Beast",
+          "Bird",
+          "Bug",
+          "Plant",
+          "Reptile"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "kwargs": {
+        "column": "HornType",
+        "value_set": [
+          "Aquatic",
+          "Beast",
+          "Bird",
+          "Bug",
+          "Plant",
+          "Reptile"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "kwargs": {
+        "column": "TailType",
+        "value_set": [
+          "Aquatic",
+          "Beast",
+          "Bird",
+          "Bug",
+          "Plant",
+          "Reptile"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "Tail",
+        "result_format": "SUMMARY",
+        "value_set": [
+          "Koi",
+          "Koinobori",
+          "Nimo",
+          "Tadpole",
+          "Ranchu",
+          "Navaga",
+          "Shrimp",
+          "Cottontail",
+          "Rice",
+          "Shiba",
+          "Hare",
+          "Nut Cracker",
+          "Gerbil",
+          "Swallow",
+          "Feather Fan",
+          "The Last One",
+          "Cloud",
+          "Granma's Fan",
+          "Omatsuri",
+          "Post Fight",
+          "Ant",
+          "Twin Tail",
+          "Fish Snack",
+          "Maki",
+          "Gravel Ant",
+          "Pupae",
+          "Thorny Caterpillar",
+          "Carrot",
+          "Namek Carrot",
+          "Cattail",
+          "Cottontail",
+          "Sakura Cottontail",
+          "Hatsune",
+          "Yam",
+          "Potato Leaf",
+          "Hot Butt",
+          "Wall Gecko",
+          "Iguana",
+          "Tiny Dino",
+          "Fir Trunk",
+          "Snake Jar",
+          "December Surprise",
+          "Gila",
+          "Grass Snake"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "Back",
+        "result_format": "SUMMARY",
+        "value_set": [
+          "Hermit",
+          "Crystal Hermit",
+          "Blue Moon",
+          "Goldfish",
+          "Sponge",
+          "Anemone",
+          "Perch",
+          "Ronin",
+          "Hasagi",
+          "Hero",
+          "Jaguar",
+          "Risky Beast",
+          "Hamaya",
+          "Timber",
+          "Furball",
+          "Balloon",
+          "Cupid",
+          "Origami",
+          "Raven",
+          "Pigeon Post",
+          "Kingfisher",
+          "Tri Feather",
+          "Snail Shell",
+          "Garish Worm",
+          "Candy Canes",
+          "Buzz Buzz",
+          "Sandal",
+          "Scarab",
+          "Spiky Wing",
+          "Turnip",
+          "Pink Turnip",
+          "Shiitake",
+          "Yakitori",
+          "Bidens",
+          "Watering Can",
+          "Mint",
+          "Pumpkin",
+          "Bone Sail",
+          "Rugged Sail",
+          "Tri Spikes",
+          "Green Thorns",
+          "Indian Star",
+          "Frozen Bucket",
+          "Red Ear",
+          "Croc"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "Horn",
+        "result_format": "SUMMARY",
+        "value_set": [
+          "Babylonia",
+          "Candy Babylonia",
+          "Teal Shell",
+          "Clamshell",
+          "Anemone",
+          "Oranda",
+          "Shoal Star",
+          "5H04L-5T4R",
+          "Little Branch",
+          "Winter Branch",
+          "Imp",
+          "Kendama",
+          "Merry",
+          "Pocky",
+          "Umaibo",
+          "Dual Blade",
+          "Arco",
+          "Eggshell",
+          "Golden Shell",
+          "Cuckoo",
+          "Trump",
+          "Kestrel",
+          "Wing Horn",
+          "Feather Spear",
+          "Lagging",
+          "Laggingggggg",
+          "Antenna",
+          "Caterpillars",
+          "Pliers",
+          "Parasite",
+          "Leaf Bug",
+          "Bamboo Shoot",
+          "Golden Bamboo Shoot",
+          "Beech",
+          "Yorishiro",
+          "Rose Bud",
+          "Strawberry Shortcake",
+          "Cactus",
+          "Santa's Gift",
+          "Watermelon",
+          "Unko",
+          "Pinku Unko",
+          "Scaly Spear",
+          "Cerastes",
+          "Scaly Spoon",
+          "Incisor",
+          "Bumpy"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "Mouth",
+        "result_format": "SUMMARY",
+        "value_set": [
+          "Lam",
+          "Lam Handsome",
+          "Catfish",
+          "Risky Fish",
+          "Piranha",
+          "Geisha",
+          "Nut Cracker",
+          "Goda",
+          "Axie Kiss",
+          "Confident",
+          "Doubletalk",
+          "Mr. Doubletalk",
+          "Peace Maker",
+          "Hungry Bird",
+          "Little Owl",
+          "Mosquito",
+          "Feasting Mosquito",
+          "Pincer",
+          "Cute Bunny",
+          "Kawaii",
+          "Square Teeth",
+          "Serious",
+          "Humorless",
+          "Zigzag",
+          "Rudolph",
+          "Herbivore",
+          "Silence Whisper",
+          "Toothless Bite",
+          "Kotaro",
+          "Razor Bite",
+          "Tiny Turtle",
+          "Tiny Carrot",
+          "Dango"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "Id",
+        "mostly": 1
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "Id",
+        "type_": "int64"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "BreedCount",
+        "mostly": 1
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "BreedCount",
+        "type_": "int64"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "Price",
+        "mostly": 1
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "Price",
+        "type_": "float64"
+      },
+      "meta": {}
+    }
+  ],
+  "ge_cloud_id": null,
+  "meta": {
+    "great_expectations_version": "0.13.34"
+  }
+}

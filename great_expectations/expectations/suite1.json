@@ -1,0 +1,18 @@
+{
+  "data_asset_type": null,
+  "expectation_suite_name": "suite1",
+  "expectations": [
+    {
+      "expectation_type": "expect_table_row_count_to_be_between",
+      "kwargs": {
+        "max_value": null,
+        "min_value": 1500
+      },
+      "meta": {}
+    }
+  ],
+  "ge_cloud_id": null,
+  "meta": {
+    "great_expectations_version": "0.13.34"
+  }
+}
