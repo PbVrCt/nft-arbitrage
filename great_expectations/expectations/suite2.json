@@ -3,7 +3,7 @@
   "expectation_suite_name": "suite2",
   "expectations": [
     {
-      "expectation_type": "expect_column_distinct_values_to_equal_set",
+      "expectation_type": "expect_column_distinct_values_to_be_in_set",
       "kwargs": {
         "column": "Class",
         "value_set": [
@@ -354,7 +354,7 @@
     {
       "expectation_type": "expect_column_values_to_not_be_null",
       "kwargs": {
-        "column": "Price",
+        "column": "PriceBy100",
         "mostly": 1
       },
       "meta": {}
@@ -362,7 +362,23 @@
     {
       "expectation_type": "expect_column_values_to_be_of_type",
       "kwargs": {
-        "column": "Price",
+        "column": "PriceBy100",
+        "type_": "float64"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "PriceUSD",
+        "mostly": 1
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "PriceUSD",
         "type_": "float64"
       },
       "meta": {}

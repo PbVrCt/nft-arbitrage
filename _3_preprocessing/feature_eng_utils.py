@@ -142,7 +142,7 @@ def fit_save_scaler(df, columns_to_fit):
         pickle.dump(scaler, f)
 
 
-# Takes either a fitted sklearn scaler or fit_scaler = True. Same for the one hot encoder
+# Takes either a fitted sklearn scaler or 'fit_scaler' = True. Same for the one hot encoder
 def preprocessing_fn(
     df,
     scores_lookup,
@@ -212,23 +212,3 @@ def preprocessing_fn(
             scaler = pickle.load(f)
     df.loc[:, columns] = scaler.transform(df.loc[:, columns].to_numpy())
     return df
-
-
-# const _parseQualityAndPureness = (genes) => {
-#     const PART_QUALITY = { D: 76 / 6, R1: 3, R2: 1 };
-#     const MAX_QUALITY = 6 * (PART_QUALITY.D + PART_QUALITY.R1 + PART_QUALITY.R2);
-
-#     let pureness = 0,
-#         quality = 0;
-
-#     for (const part of Object.keys(genes.parts)) {
-#         for (const [k, { class: cls }] of Object.entries(genes.parts[part])) {
-#             if (["D", "R1", "R2"].includes(k)) {
-#                 if (k === "D" && genes.class === cls) pureness++;
-#                 if (genes.class === cls) quality += PART_QUALITY[k];
-#             }
-#         }
-#     }
-
-#     return { ...genes, pureness, quality: quality / MAX_QUALITY };
-# };

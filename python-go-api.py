@@ -10,7 +10,7 @@ from flask_restful import Resource, Api, abort
 from _3_preprocessing.feature_eng_utils import preprocessing_fn
 
 # Model
-with open("./_4_model_training/_GBM2.pkl", "rb") as f:
+with open("./_4_model_training/_GBM.pkl", "rb") as f:
     model = pickle.load(f)
 # from tensorflow.keras.models import load_model # Tensorflow's "model.predict()" is too slow
 # model = load_model("./_2_model_training/_NN.tf")

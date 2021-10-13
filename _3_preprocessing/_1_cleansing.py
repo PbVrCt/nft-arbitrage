@@ -15,12 +15,12 @@ print(df.head())
 print("\nTotal rows: ", df.shape[0])
 df = df.drop_duplicates(["Id", "PriceUSD"]).set_index(["Id", "PriceUSD"])
 print("Total rows wtihout duplicates: ", df.shape[0])
-df = df[df["PriceBy100"] < 200].copy()
+df = df[df["PriceBy100"] < 30].copy()
 print("Total rows below price treshold: ", df.shape[0])
 
 # Subsample, weighting more the less frequent classes
 probs = 1 / df["Class"].map(df["Class"].value_counts())
-df = df.sample(n=int(df.shape[0] * 0.83), weights=probs)
+df = df.sample(n=int(df.shape[0] * 0.7), weights=probs)
 print("Total rows after subsampling by class: ", df.shape[0])
 # # Subsample, weighting more the less frequent prices
 # probs = 1 / df["PriceBy100"].map(df["PriceBy100"].value_counts(normalize=True)) + 1
@@ -62,15 +62,16 @@ sns.displot(
 ).set(title="Distribution of anomaly values", xlabel="Anomaly score")
 plt.axvline(quantile_01, c="red", linestyle="--", label="0.01 quantile")
 
-# plt.show()
-plt.draw()
-plt.pause(10)
+# plt.draw()
+# plt.pause(10)
 
-# Discard anomalies      -1 = anomaly, 1 = ok
-anomaly_prediction = model_isof.predict(X=labels.to_numpy().reshape(-1, 1))
-df = df.loc[(anomaly_prediction != -1), :]
-print("Total rows after discarding anomalies: ", df.shape[0])
+# # Discard anomalies      -1 = anomaly, 1 = ok
+# anomaly_prediction = model_isof.predict(X=labels.to_numpy().reshape(-1, 1))
+# df = df.loc[(anomaly_prediction != -1), :]
+# print("Total rows after discarding anomalies: ", df.shape[0])
 
 # Save the data
 df.to_csv(f"./data/full_cleansed.csv")
 print("\nSaved")
+
+plt.show()

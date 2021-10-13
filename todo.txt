@@ -1,5 +1,5 @@
-# Run meta scraper on the cloud
-# Get data tests to run on the cloud. Connect great expectations to s3 buckets
+# Learn Playwright, if easy, and do custom leaderboard scraping using go -> Run on cloud
+# Get data tests to run on the cloud ? In that case connect great expectations to s3 buckets
 
 # Move the training to sagemaker?
 # Make a revenue dashboard using streamlit? Serve through aws?

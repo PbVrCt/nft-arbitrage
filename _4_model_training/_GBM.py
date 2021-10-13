@@ -93,7 +93,7 @@ print(
 )
 
 # Save the model
-with open("_4_model_training/_GBM2.pkl", "wb") as f:
+with open("_4_model_training/_GBM.pkl", "wb") as f:
     pickle.dump(best_model, f)
 
 plt.show()
