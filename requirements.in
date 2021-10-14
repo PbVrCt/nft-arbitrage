@@ -1,12 +1,8 @@
 # requirements.in
-# discord
-# aiohttp
-# urllib3
 requests
+numpy
 pandas
 ipykernel
-boto3
-python-dotenv
 scikit-learn
 keras_tuner
 tensorflow
@@ -14,7 +10,6 @@ seaborn
 matplotlib
 scipy
 lightgbm
-numpy
 great-expectations
 flask
 flask-restful
@@ -24,4 +19,8 @@ selenium
 cssselect
 lxml
 
-neural-structured-learning
+# boto3
+# python-dotenv
+# discord
+# aiohttp
+# urllib3
