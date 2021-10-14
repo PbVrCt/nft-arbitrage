@@ -23,7 +23,7 @@ func main() {
 	configS3()
 	data_bucket = DownloadS3Bucket()
 	file, _ := json.MarshalIndent(data_bucket, "", " ")
-	_ = ioutil.WriteFile("../data/full_raw.json", file, 0644)
+	_ = ioutil.WriteFile("../../data/full_raw.json", file, 0644)
 }
 
 func configS3() {

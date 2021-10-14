@@ -1,8 +1,11 @@
-# Do custom leaderboard scraping using seleinum for go? -> Run on cloud
-# Get data tests to run on the cloud ? In that case connect great expectations to s3 buckets
-
-# Move the training to sagemaker?
+# Track revenue
 # Make a revenue dashboard using streamlit? Serve through aws?
+
+# Expend some time on kaggle
+
+
+# Get data tests to run on the cloud ? In that case connect great expectations to s3 buckets
+# Move the training to sagemaker?
 # Move the inference to kinesis? In that case check the record weights in kinesis
 # Try Pytorch? Tensorflow's model.predict is too slow for the inference
 # Build database with auction prices?

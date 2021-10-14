@@ -5,7 +5,7 @@
 
 FROM golang:1.16-buster AS build
 
-WORKDIR /_0_data_collection
+WORKDIR /market
 
 COPY go.mod .
 COPY go.sum .
@@ -25,7 +25,7 @@ FROM gcr.io/distroless/base-debian10
 WORKDIR /
 
 COPY --from=build /collect /collect
-COPY --from=build /_0_data_collection/.env .
+COPY --from=build /market/.env .
 
 EXPOSE 8080
 

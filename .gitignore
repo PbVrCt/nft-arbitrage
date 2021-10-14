@@ -4,9 +4,11 @@ venv/
 .vscode/
 __pycache__/
 **/__pycache__/
-_0_data_collection_leaderboard/
-_0_data_collection/*.py
-_1_retrieve_data_from_cloud/*.py
+
+_0_data_collection/market/*.py
+_0_data_collection/leaderboard/
+_1_retrieve_data_from_cloud/market/*.py
+_1_retrieve_data_from_cloud/leaderboard/
 _3_preprocessing/*.pickle
 _3_preprocessing/*.txt
 _4_model_training/*.pkl

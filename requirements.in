@@ -18,6 +18,7 @@ numpy
 great-expectations
 flask
 flask-restful
+awswrangler
 
 selenium
 cssselect

@@ -10,7 +10,7 @@ from _3_preprocessing.feature_eng_utils import (
 )
 
 # Load the data
-leaderboard = pd.read_csv("./_0_data_collection_leaderboard/leaderboard.csv")
+leaderboard = pd.read_json("./data/leaderboard_aggregated.json")
 df = pd.read_csv(f"./data/full_cleansed.csv", index_col=[0, 1])
 
 # Calculate combo scores
