@@ -7,7 +7,7 @@ import importlib
 # importlib.import_module("_2_data_tests.set_data_tests")
 # importlib.import_module("_2_data_tests.run_data_tests")
 
-# importlib.import_module("_3_preprocessing._1_cleansing")
+importlib.import_module("_3_preprocessing._1_cleansing")
 importlib.import_module("_3_preprocessing._2_feature_engineering")
 
 importlib.import_module("_4_model_training._GBM")

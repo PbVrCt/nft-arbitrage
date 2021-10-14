@@ -55,7 +55,7 @@ func predict_on_batches() {
 
 // 2 step filer: 1) price vs ML price prediction 2) price vs market prices
 func notify_if_cheap(nft AxieInfoEngineered) {
-	if _, ok := bargains[nft.Id]; !ok && (nft.Prediction*0.01) > (nft.PriceBy100*0.01)*1.5 && nft.PriceUSD > 50 {
+	if _, ok := bargains[nft.Id]; !ok && (nft.Prediction*0.01) > (nft.PriceBy100*0.01)*2.5 && nft.PriceUSD > 50 {
 		bargains[nft.Id] = true
 		start := time.Now()
 		var prices_ch = make(chan []float64)
