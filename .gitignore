@@ -13,8 +13,8 @@ _3_preprocessing/*.pickle
 _3_preprocessing/*.txt
 _4_model_training/*.pkl
 _4_model_training/_NN.tf/
-_5_inference/*.py
-test_snippets
+_5_inference/*/*.py
+_6_revenue_monitoring/
 data/*
 Keras_tuner_metadata
 TensorBoard_logs/
