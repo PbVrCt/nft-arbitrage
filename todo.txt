@@ -1,9 +1,7 @@
-# Track revenue
-# Make a revenue dashboard using streamlit? Serve through aws?
+Expend some time on kaggle
+Respond to proxy support
 
-# Expend some time on kaggle
-
-
+# Track revenue by scraping the blockchain explorer with a web scraping tool like Selenium/PlayWright or Colly for Go
 # Get data tests to run on the cloud ? In that case connect great expectations to s3 buckets
 # Move the training to sagemaker?
 # Move the inference to kinesis? In that case check the record weights in kinesis

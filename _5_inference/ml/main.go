@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"sort"
+	"sync"
 	"time"
 )
 
@@ -16,7 +17,7 @@ var responses_queque = make(chan []AxieInfo, 10) // Output channel
 const NTHREADS = 1                               // Number of threads in the worker pool doing requests ; NTHREADS < cap(post_queque)
 const MTHREADS = 20                              // Number of threads in the worker pool calling Python ; MTHREADS < cap(response_queque)
 var URL string = "https://axieinfinity.com/graphql-server-v2/graphql"
-var bargains = make(map[int]bool)
+var bargains sync.Map
 
 var external_api_client = &http.Client{Timeout: time.Second * 10}
 var python_api_client = &http.Client{Timeout: time.Second * 10}
@@ -55,8 +56,8 @@ func predict_on_batches() {
 
 // 2 step filer: 1) price vs ML price prediction 2) price vs market prices
 func notify_if_cheap(nft AxieInfoEngineered) {
-	if _, ok := bargains[nft.Id]; !ok && (nft.Prediction*0.01) > (nft.PriceBy100*0.01)*2.5 && nft.PriceUSD > 50 {
-		bargains[nft.Id] = true
+	if _, ok := bargains.Load(nft.Id); !ok && (nft.Prediction*0.01) > (nft.PriceBy100*0.01)*2.5 && nft.PriceUSD > 50 {
+		bargains.Store(nft.Id, true)
 		start := time.Now()
 		var prices_ch = make(chan []float64)
 		var history_ch = make(chan PriceHistory)
