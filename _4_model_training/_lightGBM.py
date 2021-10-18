@@ -9,18 +9,35 @@ from scipy.stats import randint as sp_randint
 from scipy.stats import uniform as sp_uniform
 import matplotlib.pyplot as plt
 
+from _3_preprocessing.preprocessing_fns import preprocessing_fn_2
 from _4_model_training.reduce_mem_usage import reduce_mem_usage
 
-df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
-df = reduce_mem_usage(df)
-features = (
-    df.iloc[:-3000].loc[:, df.columns.difference(["Priceby100", "PriceUSD"])].to_numpy()
+# Load the feature engineering utilities
+with open("./features/feature_set_2_ohe.pickle", "rb") as f:
+    ohe = pickle.load(f)
+with open("./features/feature_set_2_scaler.pickle", "rb") as f:
+    scaler = pickle.load(f)
+with open("./features/combo_scores.txt") as f:
+    for i in f.readlines():
+        combo_scores = i
+combo_scores = eval(combo_scores)
+# Load the data
+train = pd.read_csv(".\data\\set_train_val.csv", index_col=[0, 1])
+holdout = pd.read_csv(".\data\\set_holdout1.csv", index_col=[0, 1])
+# Use preprocessing_fn_n to engineer feature set n
+train = preprocessing_fn_2(combo_scores, scaler=scaler, encoder=ohe).transform(train)
+holdout = preprocessing_fn_2(combo_scores, scaler=scaler, encoder=ohe).transform(
+    holdout
 )
-labels = df.iloc[:-3000].loc[:, "PriceBy100"].to_numpy()
-test_features = (
-    df.iloc[-3000:].loc[:, df.columns.difference(["Priceby100", "PriceUSD"])].to_numpy()
-)
-test_labels = df.iloc[-3000:].loc[:, "PriceBy100"].to_numpy()
+# Split in features and labels
+train = reduce_mem_usage(train)
+holdout = reduce_mem_usage(holdout)
+features = train.loc[:, train.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
+labels = train.loc[:, "PriceBy100"].to_numpy()
+test_features = holdout.loc[
+    :, holdout.columns.difference(["PriceBy100", "PriceUSD"])
+].to_numpy()
+test_labels = holdout.loc[:, "PriceBy100"].to_numpy()
 
 
 def learning_rate_010_decay_power_099(current_iter):
@@ -118,16 +135,13 @@ best_model.fit(
 # Feature importances
 feat_imp = pd.Series(
     best_model.feature_importances_,
-    index=df.loc[:, df.columns != "PriceBy100"].columns,
+    index=train.loc[:, train.columns.difference(["PriceBy100", "PriceUSD"])].columns,
 )
 feat_imp.nlargest(20).plot(kind="barh", figsize=(10, 6))
 plt.tight_layout()
 plt.draw()
 plt.pause(10)
 
-# Do the final test on the test set
-predictions = best_model.predict(test_features)
-print("\nScore on the test set: ", metrics.mean_squared_error(test_labels, predictions))
 # Save the model
-with open("_4_model_training/_lightGBM.pkl", "wb") as f:
+with open("models/_lightGBM.pkl", "wb") as f:
     pickle.dump(best_model, f)

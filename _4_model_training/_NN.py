@@ -7,35 +7,53 @@ import pandas as pd
 import tensorflow as tf
 import keras_tuner as kt
 
-from _4_model_training._NNmodel import NNmodel
+from _3_preprocessing.preprocessing_fns import preprocessing_fn_3
 from _4_model_training.reduce_mem_usage import reduce_mem_usage
+from _4_model_training._NNmodel import NNmodel
 
+# Load the feature engineering utilities
+with open("./features/feature_set_3_ohe.pickle", "rb") as f:
+    ohe = pickle.load(f)
+with open("./features/feature_set_3_scaler.pickle", "rb") as f:
+    scaler = pickle.load(f)
+with open("./features/combo_scores.txt") as f:
+    for i in f.readlines():
+        combo_scores = i
+combo_scores = eval(combo_scores)
 # Load the data
-df = pd.read_csv(".\data\\full_engineered.csv", index_col=[0])
-df = reduce_mem_usage(df)
-# Split in sets
+train = pd.read_csv(".\data\\set_train_val.csv", index_col=[0, 1])
+holdout = pd.read_csv(".\data\\set_holdout1.csv", index_col=[0, 1])
+# Use preprocessing_fn_n to engineer feature set n
+train = preprocessing_fn_3(combo_scores, scaler=scaler, encoder=ohe).transform(train)
+holdout = preprocessing_fn_3(combo_scores, scaler=scaler, encoder=ohe).transform(
+    holdout
+)
+# Split in features and labels
+train = reduce_mem_usage(train)
+holdout = reduce_mem_usage(holdout)
+features = train.loc[:, train.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
+labels = train.loc[:, "PriceBy100"].to_numpy()
+test_features = holdout.loc[
+    :, holdout.columns.difference(["PriceBy100", "PriceUSD"])
+].to_numpy()
+test_labels = holdout.loc[:, "PriceBy100"].to_numpy()
+# Split in training and validation sets
 train_features = (
-    df.iloc[: -int(df.shape[0] * 0.3)]
-    .loc[:, df.columns.difference(["Priceby100", "PriceUSD"])]
+    df.iloc[: -int(train_val.shape[0] * 0.2)]
+    .loc[:, train_val.columns.difference(["Priceby100", "PriceUSD"])]
     .to_numpy()
 )
-train_labels = df.iloc[: -int(df.shape[0] * 0.3)].loc[:, "PriceBy100"].to_numpy()
+train_labels = (
+    train_val.iloc[: -int(train_val.shape[0] * 0.2)].loc[:, "PriceBy100"].to_numpy()
+)
 val_features = (
-    df.iloc[-int(df.shape[0] * 0.3) : -int(df.shape[0] * 0.1)]
-    .loc[:, df.columns.difference(["Priceby100", "PriceUSD"])]
+    train_val.iloc[-int(train_val.shape[0] * 0.2) :]
+    .loc[:, train_val.columns.difference(["Priceby100", "PriceUSD"])]
     .to_numpy()
 )
 val_labels = (
-    df.iloc[-int(df.shape[0] * 0.3) : -int(df.shape[0] * 0.1)]
-    .loc[:, "PriceBy100"]
-    .to_numpy()
+    train_val.iloc[-int(train_val.shape[0] * 0.2) :].loc[:, "PriceBy100"].to_numpy()
 )
-test_features = (
-    df.iloc[-int(df.shape[0] * 0.1) :]
-    .loc[:, df.columns.difference(["Priceby100", "PriceUSD"])]
-    .to_numpy()
-)
-test_labels = df.iloc[-int(df.shape[0] * 0.1) :].loc[:, "PriceBy100"].to_numpy()
 # Define the model: NN
 hypermodel = NNmodel()
 # Find optimal hyperparameters
@@ -122,6 +140,4 @@ best_model.summary()
 # print("[test loss, test metrics]:", result)
 
 # # Save the model
-best_model.save("_4_model_training/_NN.tf")
-# with open("_4_model_training/_NN.pickle", "wb") as f:  # try with _NN.tf
-#     pickle.dump(best_model, f)
+best_model.save("models/_NN.tf")
