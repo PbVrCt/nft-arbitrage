@@ -25,8 +25,8 @@ var external_api_client = &http.Client{Timeout: time.Second * 10}
 
 func main() {
 	LoadEnv()
-	// go get_data(query_latest, 2)
-	go get_data(query_brief_list, 100)
+	go get_data(query_latest, 2)
+	// go get_data(query_brief_list, 100)
 	go predict_on_batches()
 	select {} // So the script runs until cancelled
 }
@@ -45,7 +45,7 @@ func predict_on_batches() {
 				} else {
 					fmt.Printf("Error getting data from go channel")
 				}
-				time.Sleep(time.Duration(rand.Intn(250)+250) * time.Millisecond) // To avoid getting blocked by the api if not using proxies
+				time.Sleep(time.Duration(rand.Intn(500)+500) * time.Millisecond) // To avoid getting blocked by the api if not using proxies
 			}
 		}()
 	}
@@ -69,7 +69,7 @@ func notify_if_rule(nft AxieInfo) {
 		go get_current_listings(nft, prices_ch)
 		combo_prices := <-combo_ch
 		identical_prices := <-prices_ch
-		if avg(combo_prices) > (nft.PriceBy100 * 0.01) {
+		if avg(combo_prices) > 0.02+(nft.PriceBy100*0.01) {
 			fmt.Print(nft.Id, "\n")
 			go notify_discord(nft, identical_prices, combo_prices)
 		}

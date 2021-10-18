@@ -46,7 +46,10 @@ var filters = map[string][]map[string]string{
 		{"back": "Ronin", "mouth": "Nut Cracker", "horn": "Imp", "tail": "Nut Cracker"},
 		{"back": "Ronin", "mouth": "Axie Kiss", "horn": "Dual Blade", "tail": "Cottontail"},
 	},
-	"Dusk": {{"back": "Snail Shell", "mouth": "Tiny Turtle", "horn": "Lagging", "tail": "Thorny Caterpillar"}},
+	"Dusk": {
+		{"back": "Snail Shell", "mouth": "Tiny Turtle", "horn": "Lagging", "tail": "Thorny Caterpillar"},
+		{"back": "Snail Shell", "mouth": "Doubletalk", "horn": "Lagging", "tail": "Thorny Caterpillar"},
+	},
 	"Bug": {
 		{"back": "SnailShell", "mouth": "Pincer", "horn": "Parasite", "tail": "Gravel Ant"},
 		{"back": "Snail Shell", "mouth": "Pincer", "horn": "Parasite", "tail": "Fish Snack"},
@@ -54,7 +57,7 @@ var filters = map[string][]map[string]string{
 	"Mech": {
 		{"back": "Ronin", "mouth": "Nut Cracker", "horn": "Imp", "tail": "Nut Cracker"},
 	},
-	"Reptile": {},
+	"Reptile": {{"back": "Snail Shell", "mouth": "Doubletalk", "horn": "Lagging", "tail": "Thorny Caterpillar"}},
 	"Dawn":    {},
 }
 
