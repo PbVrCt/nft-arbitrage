@@ -1,5 +1,14 @@
-Expend some time on kaggle
-Respond to proxy support
+Finish the stacked ensemble
+    Split in features and labels in hte separate file
+    Have preprocessing_fn_n.transform() return after using .to_numpy()
+    Remove the .to_numpy() from the training files, including ensemble.py
+    Run the ensemble.py file again
+    In the ensemble_model.py file, create a model that fits by predicting on the initial layers and then fitting the final layers,
+    and predicts by predicting in the initial layers and then predicting on the output of those
+
+Expend more time on kaggle
+EDA: Check features and label correlations
+Add lasso
 
 # Track revenue by scraping the blockchain explorer with a web scraping tool like Selenium/PlayWright or Colly for Go
 # Get data tests to run on the cloud ? In that case connect great expectations to s3 buckets
@@ -10,7 +19,7 @@ Respond to proxy support
 
 
 
-# Project timeline (5 weeks):
+# Project timeline (6 weeks):
 
 # Exploring data collection and data
 # Getting Mininum Viable Product

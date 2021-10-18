@@ -16,6 +16,7 @@ _4_model_training/_NN.tf/
 _5_inference/*/*.py
 _6_revenue_monitoring/
 data/*
+models/*
 Keras_tuner_metadata
 TensorBoard_logs/
 proxy_support/
