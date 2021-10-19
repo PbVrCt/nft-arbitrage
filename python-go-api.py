@@ -1,32 +1,19 @@
-"""This api serves the preprocessing utilies and ml model for real time inference on the data extracted with go.
- It loads the same preprocessing utilitiles that were used for model training"""
+"""This api does real time inference by serving an ML model trained in Python to predict on data extracted with Go.
+ """
 import pickle
+import time
 
 import pandas as pd
 import numpy as np
 from flask import Flask, redirect, request, jsonify, make_response, send_file
 from flask_restful import Resource, Api, abort
 
-from _3_preprocessing.feature_eng_utils import preprocessing_fn
+from _3_preprocessing.preprocessing_fns import features_to_show
 
 # Model
-with open("./_4_model_training/_GBM.pkl", "rb") as f:
+with open("./models/ensemble.pkl", "rb") as f:
     model = pickle.load(f)
-# from tensorflow.keras.models import load_model # Tensorflow's "model.predict()" is too slow
-# model = load_model("./_2_model_training/_NN.tf")
-
-# One hot encoder
-with open("./_3_preprocessing/one_hot_encoder.pickle", "rb") as f:
-    oh_enc = pickle.load(f)
-# Scaler
-with open("./_3_preprocessing/scaler.pickle", "rb") as f:
-    scaler = pickle.load(f)
-# Card and combo scores
-with open("./_3_preprocessing/combo_scores.txt") as f:
-    for i in f.readlines():
-        combo_scores = i
-combo_scores = eval(combo_scores)
-
+# Api
 app = Flask(__name__, static_url_path="", static_folder="dist")
 api = Api(app)
 
@@ -54,37 +41,22 @@ class NewR(Resource):
             ],
         ]
         df = df.drop(["Image", "PriceBy100", "PriceUSD"], axis=1)
-        # Feature engineering
-        df = preprocessing_fn(
-            df,
-            combo_scores,
-            encoder=oh_enc,
-            scaler=scaler,
-            fit_encoder=False,
-            fit_scaler=False,
-        )
-        # Predictions; Sklearn
-        price_predictions = df.apply(
-            lambda row: model.predict(row.values.reshape(1, -1))[0], axis=1
-        ).rename("Prediction")
+        # Model serving
 
-        # Predictions; Tensorflow
-        # price_predictions = df.apply(
-        #     lambda row: model.predict(
-        #         row.values.reshape(1, -1), batch_size=len(row.values.reshape(1, -1))
-        #     )[0][0],
-        #     axis=1,
-        # ).rename("Prediction")
+        # start = time.time()
+        price_predictions = pd.Series(model.predict(df)).rename("Prediction")
+        # end = time.time()
+        # print("Time elapsed in doing predictions: ", end - start, "s")
 
         # Output back to Go
         df = pd.concat(
             [
-                basic_info,
+                basic_info.reset_index(),
                 price_predictions,
-                df.loc[:, ["gene_quality", "Hp", "Sk", "Sp", "Mr"]],
+                features_to_show(df).reset_index(),
             ],
             axis=1,
-        ).reset_index()
+        )
         form = df.to_dict(orient="records")
         return form
 

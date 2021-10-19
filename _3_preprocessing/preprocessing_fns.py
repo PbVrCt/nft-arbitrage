@@ -143,7 +143,7 @@ def fit_save_scaler(df, columns_to_fit, file_prefix):
 
 
 # Takes either a fitted sklearn scaler or 'fit_scaler' = True. Same for the one hot encoder
-class preprocessing_fn_1:
+class PreprocessingFn1:
     def __init__(self, scores_lookup, encoder=False, scaler=False):
         self.__scores = scores_lookup
         self.__encoder = encoder
@@ -160,9 +160,15 @@ class preprocessing_fn_1:
         return self
 
     def fit_transform(self, df):
-        return transform(df)
+        return self.transform(df)
+
+    def feature_list(self, df):
+        return self.preprocessing(df).columns
 
     def transform(self, df):
+        return self.preprocessing(df).to_numpy()
+
+    def preprocessing(self, df):
         df = df.copy()
         # Feature engineering
         df.loc[:, "multiplier_score"] = df.apply(assign_multiplier_score, axis=1)
@@ -194,7 +200,7 @@ class preprocessing_fn_1:
 
 
 # Takes either a fitted sklearn scaler or 'fit_scaler' = True. Same for the one hot encoder
-class preprocessing_fn_2:
+class PreprocessingFn2:
     def __init__(self, scores_lookup, encoder=False, scaler=False):
         self.__scores = scores_lookup
         self.__encoder = encoder
@@ -212,14 +218,21 @@ class preprocessing_fn_2:
         return self
 
     def fit_transform(self, df):
-        return transform(df)
+        return self.transform(df)
+
+    def feature_list(self, df):
+        return self.preprocessing(df).columns
 
     def transform(self, df):
+        return self.preprocessing(df).to_numpy()
+
+    def preprocessing(self, df):
         df = df.copy()
         # Feature engineering
-        df.loc[:, "multiplier_score"] = df.apply(assign_multiplier_score, axis=1)
-        df.loc[:, "card_score"] = df.apply(assign_card_score, axis=1)
-
+        df.loc[:, "multiplier_score"] = df.apply(
+            lambda df: assign_multiplier_score(df), axis=1
+        )
+        df.loc[:, "card_score"] = df.apply(lambda df: assign_card_score(df), axis=1)
         df = engineer_combos(df)
         df.loc[:, "combo_score"] = df.apply(
             lambda df: assign_combo_score(df, self.__scores, combos), axis=1
@@ -246,7 +259,7 @@ class preprocessing_fn_2:
 
 
 # Takes either a fitted sklearn scaler or 'fit_scaler' = True. Same for the one hot encoder
-class preprocessing_fn_3:
+class PreprocessingFn3:
     def __init__(self, scores_lookup, encoder=False, scaler=False):
         self.__scores = scores_lookup
         self.__encoder = encoder
@@ -266,9 +279,15 @@ class preprocessing_fn_3:
         return self
 
     def fit_transform(self, df):
-        return transform(df)
+        return self.transform(df)
+
+    def feature_list(self, df):
+        return self.preprocessing(df).columns
 
     def transform(self, df):
+        return self.preprocessing(df).to_numpy()
+
+    def preprocessing(self, df):
         df = df.copy()
         # Feature engineering
         df.loc[:, "multiplier_score"] = df.apply(assign_multiplier_score, axis=1)
@@ -317,3 +336,12 @@ class preprocessing_fn_3:
         columns = ["Hp", "Sp", "Sk", "Mr", "card_score"]
         df.loc[:, columns] = self.__scaler.transform(df.loc[:, columns].to_numpy())
         return df
+
+
+def features_to_show(df):
+    df = df.copy()
+    df.loc[:, "gene_quality"] = df.apply(assign_gene_quality, axis=1)
+    df.loc[:, "stats"] = df.apply(assign_stats, axis=1)
+    df[["Hp", "Sp", "Sk", "Mr"]] = pd.DataFrame(df.stats.tolist(), index=df.index)
+    df.drop("stats", axis=1, inplace=True)
+    return df.loc[:, ["gene_quality", "Hp", "Sp", "Sk", "Mr"]]

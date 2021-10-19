@@ -1,14 +1,6 @@
-Finish the stacked ensemble
-    Split in features and labels in hte separate file
-    Have preprocessing_fn_n.transform() return after using .to_numpy()
-    Remove the .to_numpy() from the training files, including ensemble.py
-    Run the ensemble.py file again
-    In the ensemble_model.py file, create a model that fits by predicting on the initial layers and then fitting the final layers,
-    and predicts by predicting in the initial layers and then predicting on the output of those
-
-Expend more time on kaggle
-EDA: Check features and label correlations
-Add lasso
+Finish the stacked ensemble:
+    See if possible to train the base models in a sklearn pipeline that starts by implementing their corresponding feature sets
+    in order to remove boilerplate from ensemble.py
 
 # Track revenue by scraping the blockchain explorer with a web scraping tool like Selenium/PlayWright or Colly for Go
 # Get data tests to run on the cloud ? In that case connect great expectations to s3 buckets

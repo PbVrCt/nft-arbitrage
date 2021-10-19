@@ -11,11 +11,11 @@ import importlib
 # importlib.import_module("_3_preprocessing._2_prepare_feature_sets")
 # importlib.import_module("_3_preprocessing._3_split_data_in_sets")
 
-# importlib.import_module("_4_model_training._GBM")
-# importlib.import_module("_4_model_training._tree")
-# importlib.import_module("_4_model_training._lightGBM")
-# importlib.import_module("_4_model_training._polynomial")
-# importlib.import_module("_4_model_training._KNN")
+importlib.import_module("_4_model_training._GBM")
+importlib.import_module("_4_model_training._tree")
+importlib.import_module("_4_model_training._lightGBM")
+importlib.import_module("_4_model_training._polynomial")
+importlib.import_module("_4_model_training._KNN")
 importlib.import_module("_4_model_training.ensemble")
 
 # _5_inference: First run the python offline server by executing the "run-app.bat" file

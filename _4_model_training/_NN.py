@@ -7,8 +7,7 @@ import pandas as pd
 import tensorflow as tf
 import keras_tuner as kt
 
-from _3_preprocessing.preprocessing_fns import preprocessing_fn_3
-from _4_model_training.reduce_mem_usage import reduce_mem_usage
+from _3_preprocessing.preprocessing_fns import PreprocessingFn3
 from _4_model_training._NNmodel import NNmodel
 
 # Load the feature engineering utilities
@@ -21,39 +20,25 @@ with open("./features/combo_scores.txt") as f:
         combo_scores = i
 combo_scores = eval(combo_scores)
 # Load the data
-train = pd.read_csv(".\data\\set_train_val.csv", index_col=[0, 1])
-holdout = pd.read_csv(".\data\\set_holdout1.csv", index_col=[0, 1])
-# Use preprocessing_fn_n to engineer feature set n
-train = preprocessing_fn_3(combo_scores, scaler=scaler, encoder=ohe).transform(train)
-holdout = preprocessing_fn_3(combo_scores, scaler=scaler, encoder=ohe).transform(
-    holdout
+features = pd.read_csv(".\data\\set_train_val_features.csv", index_col=[0])
+labels = pd.read_csv(".\data\\set_train_val_labels.csv", index_col=[0])
+test_features = pd.read_csv(".\data\\set_holdout1_features.csv", index_col=[0])
+test_labels = pd.read_csv(".\data\\set_holdout1_labels.csv", index_col=[0])
+# Use PreprocessingFnn to engineer feature set n. Returns a numpy array
+features = PreprocessingFn3(combo_scores, scaler=scaler, encoder=ohe).transform(
+    features
 )
-# Split in features and labels
-train = reduce_mem_usage(train)
-holdout = reduce_mem_usage(holdout)
-features = train.loc[:, train.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
-labels = train.loc[:, "PriceBy100"].to_numpy()
-test_features = holdout.loc[
-    :, holdout.columns.difference(["PriceBy100", "PriceUSD"])
-].to_numpy()
-test_labels = holdout.loc[:, "PriceBy100"].to_numpy()
+test_features = PreprocessingFn3(combo_scores, scaler=scaler, encoder=ohe).transform(
+    test_features
+)
+labels = labels.to_numpy().ravel()
+test_labels = test_labels.to_numpy().ravel()
 # Split in training and validation sets
-train_features = (
-    df.iloc[: -int(train_val.shape[0] * 0.2)]
-    .loc[:, train_val.columns.difference(["Priceby100", "PriceUSD"])]
-    .to_numpy()
-)
-train_labels = (
-    train_val.iloc[: -int(train_val.shape[0] * 0.2)].loc[:, "PriceBy100"].to_numpy()
-)
-val_features = (
-    train_val.iloc[-int(train_val.shape[0] * 0.2) :]
-    .loc[:, train_val.columns.difference(["Priceby100", "PriceUSD"])]
-    .to_numpy()
-)
-val_labels = (
-    train_val.iloc[-int(train_val.shape[0] * 0.2) :].loc[:, "PriceBy100"].to_numpy()
-)
+nrows = len(features)
+train_features = features.iloc[: (-nrows * 0.2)]
+train_labels = labels.iloc[: (-nrows * 0.2)]
+val_features = features.iloc[1 - (nrows * 0.2) :]
+val_labels = labels.iloc[1 - (nrows * 0.2) :]
 # Define the model: NN
 hypermodel = NNmodel()
 # Find optimal hyperparameters

@@ -9,8 +9,7 @@ from scipy.stats import randint as sp_randint
 from scipy.stats import uniform as sp_uniform
 import matplotlib.pyplot as plt
 
-from _3_preprocessing.preprocessing_fns import preprocessing_fn_2
-from _4_model_training.reduce_mem_usage import reduce_mem_usage
+from _3_preprocessing.preprocessing_fns import PreprocessingFn2
 
 # Load the feature engineering utilities
 with open("./features/feature_set_2_ohe.pickle", "rb") as f:
@@ -22,22 +21,23 @@ with open("./features/combo_scores.txt") as f:
         combo_scores = i
 combo_scores = eval(combo_scores)
 # Load the data
-train = pd.read_csv(".\data\\set_train_val.csv", index_col=[0, 1])
-holdout = pd.read_csv(".\data\\set_holdout1.csv", index_col=[0, 1])
-# Use preprocessing_fn_n to engineer feature set n
-train = preprocessing_fn_2(combo_scores, scaler=scaler, encoder=ohe).transform(train)
-holdout = preprocessing_fn_2(combo_scores, scaler=scaler, encoder=ohe).transform(
-    holdout
+features = pd.read_csv(".\data\\set_train_val_features.csv", index_col=[0])
+labels = pd.read_csv(".\data\\set_train_val_labels.csv", index_col=[0])
+test_features = pd.read_csv(".\data\\set_holdout1_features.csv", index_col=[0])
+test_labels = pd.read_csv(".\data\\set_holdout1_labels.csv", index_col=[0])
+# Get the list of features to show feature_importances later
+feature_list = PreprocessingFn2(combo_scores, scaler=scaler, encoder=ohe).feature_list(
+    features
 )
-# Split in features and labels
-train = reduce_mem_usage(train)
-holdout = reduce_mem_usage(holdout)
-features = train.loc[:, train.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
-labels = train.loc[:, "PriceBy100"].to_numpy()
-test_features = holdout.loc[
-    :, holdout.columns.difference(["PriceBy100", "PriceUSD"])
-].to_numpy()
-test_labels = holdout.loc[:, "PriceBy100"].to_numpy()
+# Use PreprocessingFnn to engineer feature set n. Returns a numpy array
+features = PreprocessingFn2(combo_scores, scaler=scaler, encoder=ohe).transform(
+    features
+)
+test_features = PreprocessingFn2(combo_scores, scaler=scaler, encoder=ohe).transform(
+    test_features
+)
+labels = labels.to_numpy().ravel()
+test_labels = test_labels.to_numpy().ravel()
 
 
 def learning_rate_010_decay_power_099(current_iter):
@@ -133,10 +133,7 @@ best_model.fit(
     callbacks=[lgb.reset_parameter(learning_rate=learning_rate_010_decay_power_0995)]
 )
 # Feature importances
-feat_imp = pd.Series(
-    best_model.feature_importances_,
-    index=train.loc[:, train.columns.difference(["PriceBy100", "PriceUSD"])].columns,
-)
+feat_imp = pd.Series(best_model.feature_importances_, index=feature_list)
 feat_imp.nlargest(20).plot(kind="barh", figsize=(10, 6))
 plt.tight_layout()
 plt.draw()

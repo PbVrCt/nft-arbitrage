@@ -5,14 +5,13 @@ venv/
 __pycache__/
 **/__pycache__/
 
+*.ipynb
 _0_data_collection/market/*.py
 _0_data_collection/leaderboard/
 _1_retrieve_data_from_cloud/market/*.py
 _1_retrieve_data_from_cloud/leaderboard/
-_3_preprocessing/*.pickle
-_3_preprocessing/*.txt
-_4_model_training/*.pkl
-_4_model_training/_NN.tf/
+_4_model_training/reduce_mem_usage.py
+_4_model_training/test_predictions.ipynb
 _5_inference/*/*.py
 _6_revenue_monitoring/
 data/*

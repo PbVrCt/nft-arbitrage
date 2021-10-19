@@ -39,29 +39,32 @@ sns.kdeplot(data=labels, ax=axes[0, 1])
 sns.countplot(x="Class", data=df, ax=axes[1, 0])
 sns.kdeplot(data=df, x="PriceBy100", hue="Class", fill=True, ax=axes[1, 1])
 
-# Unsupervised anomaly detection model
-ANOMALY_QUANTILE = 0.05  #  "auto"
-model_isof = IsolationForest(
-    n_estimators=1000,
-    max_samples="auto",
-    contamination=ANOMALY_QUANTILE,
-    n_jobs=-1,
-    random_state=123,
-)
-model_isof.fit(X=labels.to_numpy().reshape(-1, 1))
+# Save the data
+df.to_csv(f"./data/full_cleansed.csv")
+print("\nSaved")
 
-# Show the anomaly score distribution
-anomaly_score = model_isof.score_samples(X=labels.to_numpy().reshape(-1, 1))
-quantile_01 = np.quantile(anomaly_score, q=ANOMALY_QUANTILE)
-sns.displot(
-    data=anomaly_score,
-    kind="kde",
-    color="blue",
-    height=5,
-    aspect=2,
-).set(title="Distribution of anomaly values", xlabel="Anomaly score")
-plt.axvline(quantile_01, c="red", linestyle="--", label="0.01 quantile")
+# # Unsupervised anomaly detection model
+# ANOMALY_QUANTILE = 0.05  #  "auto"
+# model_isof = IsolationForest(
+#     n_estimators=1000,
+#     max_samples="auto",
+#     contamination=ANOMALY_QUANTILE,
+#     n_jobs=-1,
+#     random_state=123,
+# )
+# model_isof.fit(X=labels.to_numpy().reshape(-1, 1))
 
+# # Show the anomaly score distribution
+# anomaly_score = model_isof.score_samples(X=labels.to_numpy().reshape(-1, 1))
+# quantile_01 = np.quantile(anomaly_score, q=ANOMALY_QUANTILE)
+# sns.displot(
+#     data=anomaly_score,
+#     kind="kde",
+#     color="blue",
+#     height=5,
+#     aspect=2,
+# ).set(title="Distribution of anomaly values", xlabel="Anomaly score")
+# plt.axvline(quantile_01, c="red", linestyle="--", label="0.01 quantile")
 # plt.draw()
 # plt.pause(10)
 
@@ -69,9 +72,3 @@ plt.axvline(quantile_01, c="red", linestyle="--", label="0.01 quantile")
 # anomaly_prediction = model_isof.predict(X=labels.to_numpy().reshape(-1, 1))
 # df = df.loc[(anomaly_prediction != -1), :]
 # print("Total rows after discarding anomalies: ", df.shape[0])
-
-# Save the data
-df.to_csv(f"./data/full_cleansed.csv")
-print("\nSaved")
-
-plt.show()

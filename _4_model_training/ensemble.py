@@ -1,8 +1,7 @@
 import pickle
 
 import pandas as pd
-from numpy import mean
-from numpy import std
+import numpy as np
 from sklearn import metrics
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import RepeatedKFold
@@ -14,30 +13,11 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 
 from _3_preprocessing.preprocessing_fns import (
-    preprocessing_fn_1,
-    preprocessing_fn_2,
-    preprocessing_fn_3,
+    PreprocessingFn1,
+    PreprocessingFn2,
+    PreprocessingFn3,
 )
-from _4_model_training.reduce_mem_usage import reduce_mem_usage
-
-# Load the data
-train = pd.read_csv(".\data\\set_train_val.csv", index_col=[0, 1])
-holdout = pd.read_csv(".\data\\set_holdout1.csv", index_col=[0, 1])
-holdout2 = pd.read_csv(".\data\\set_holdout2.csv", index_col=[0, 1])
-train = reduce_mem_usage(train)
-holdout = reduce_mem_usage(holdout)
-holdout2 = reduce_mem_usage(holdout2)
-# Split the data in features and labels
-features = train.loc[:, train.columns.difference(["PriceBy100", "PriceUSD"])].to_numpy()
-labels = train.loc[:, "PriceBy100"].to_numpy()
-test_features = holdout.loc[
-    :, holdout.columns.difference(["PriceBy100", "PriceUSD"])
-].to_numpy()
-test_labels = holdout.loc[:, "PriceBy100"].to_numpy()
-final_test_features = holdout2.loc[
-    :, holdout2.columns.difference(["PriceBy100", "PriceUSD"])
-].to_numpy()
-final_test_labels = holdout2.loc[:, "PriceBy100"].to_numpy()
+from _4_model_training.ensemble_model import EnsembleModel
 
 # Load the feature engineering utilities
 with open("./features/feature_set_1_ohe.pickle", "rb") as f:
@@ -56,111 +36,65 @@ with open("./features/combo_scores.txt") as f:
     for i in f.readlines():
         scores = i
 scores = eval(scores)
+# Load the data
+features = pd.read_csv(".\data\\set_train_val_features.csv", index_col=[0])
+labels = pd.read_csv(".\data\\set_train_val_labels.csv", index_col=[0])
+test_features = pd.read_csv(".\data\\set_holdout1_features.csv", index_col=[0])
+test_labels = pd.read_csv(".\data\\set_holdout1_labels.csv", index_col=[0])
+final_test_features = pd.read_csv(".\data\\set_holdout2_features.csv", index_col=[0])
+final_test_labels = pd.read_csv(".\data\\set_holdout2_labels.csv", index_col=[0])
 # Load the base models and pair them with the feature sets used to train each model
 models = dict()
 with open("./models/_GBM.pkl", "rb") as f:
     models["GBM"] = Pipeline(
-        [("_", preprocessing_fn_3(scores, ohe3, scaler3)), ("GBM", pickle.load(f))]
+        [("_", PreprocessingFn3(scores, ohe3, scaler3)), ("GBM", pickle.load(f))]
     )
 with open("./models/_lightGBM.pkl", "rb") as f:
     models["lGBM"] = Pipeline(
-        [("_", preprocessing_fn_2(scores, ohe3, scaler3)), ("lGBM", pickle.load(f))]
+        [("_", PreprocessingFn2(scores, ohe2, scaler2)), ("lGBM", pickle.load(f))]
     )
 with open("./models/_tree.pkl", "rb") as f:
     models["tree"] = Pipeline(
-        [("_", preprocessing_fn_1(scores, ohe3, scaler3)), ("tree", pickle.load(f))]
+        [("_", PreprocessingFn1(scores, ohe1, scaler1)), ("tree", pickle.load(f))]
     )
 with open("./models/_KNN.pkl", "rb") as f:
     models["KNN"] = Pipeline(
-        [("_", preprocessing_fn_1(scores, ohe3, scaler3)), ("KNN", pickle.load(f))]
+        [("_", PreprocessingFn1(scores, ohe1, scaler1)), ("KNN", pickle.load(f))]
     )
 with open("./models/_polynomial.pkl", "rb") as f:
     models["poly"] = Pipeline(
-        [("_", preprocessing_fn_1(scores, ohe3, scaler3)), ("poly", pickle.load(f))]
+        [("_", PreprocessingFn1(scores, ohe1, scaler1)), ("poly", pickle.load(f))]
     )
 
 # Check how the base model predictions correlate
-pred = pd.DataFrame()
+pred, names = list(), list()
 for name, model in models.items():
-    data = pd.DataFrame({name: model.predict(features)})
-    pred = pd.concat([pred, data], axis=1)
-sns.heatmap(pred.corr(), xticklabels=pred.columns, yticklabels=pred.columns, annot=True)
-plt.show()
-# plt.draw()
-# plt.pause(10)
-
-# Compare the models on a holdout set
-def compare_models():
-    results, names = list(), list()
-    cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
-    for name, model in models.items():
-        preds = model.predict(test_features)
-        scores = test_labels - preds
-        results.append(scores)
-        names.append(name)
-        print(">%s %.3f (%.3f)" % (name, mean(scores), std(scores)))
-    plt.boxplot(results, labels=names, showmeans=True)
-    plt.show()
-    # plt.draw()
-    # plt.pause(10)
-
-
-compare_models()
+    pred.append(model.predict(features))
+    names.append(name)
+pred = np.array(pred)
+sns.heatmap(np.corrcoef(pred), xticklabels=names, yticklabels=names, annot=True)
 # Create the ensemble
-
-# level0 = list()
-# for name, model in models.items():
-#     level0.append((name, model))
-# level1 = LinearRegression()
-# ensemble = StackingRegressor(estimators=level0, final_estimator=level1, cv=5)
-
-
-class IdentityPassthrough(ClassifierMixin):
-    def __init__(self):
-        pass
-
-    def fit(self, X, y):
-        return self
-
-    def predict(self, X):
-        return X
-
-
-partial_passthrough = Pipeline(
-    [
-        (
-            "pass",
-            ColumnTransformer([("pass", "passthrough", ["a", "b"])]),
-        ),
-        ("ident", IdentityPassthrough()),
-    ]
-)
-feature_set1 = ColumnTransformer([("_", preprocessing_fn_1, ["a", "b"])])
-feature_set2 = ColumnTransformer([("_", preprocessing_fn_2, ["a", "b"])])
-feature_set3 = ColumnTransformer([("_", preprocessing_fn_3, ["a", "b"])])
-ensemble = StackingRegressor(
-    estimators=[
-        ("pass", partial_passthrough),
-        ("GBM", Pipeline([("_", feature_set3), ("GBM", model["GBM"])])),
-        ("lGBM", Pipeline([("_", feature_set2), ("lGBM", model["lGBM"])])),
-        ("tree", Pipeline([("_", feature_set1), ("tree", model["tree"])])),
-        ("KNN", Pipeline([("_", feature_set1), ("KNN", model["KNN"])])),
-        ("poly", Pipeline([("_", feature_set1), ("poly", model["poly"])])),
-    ],
-    final_estimator=LinearRegression(),
-    cv=5,
-)
-
-
+estimators = list()
+for _, model in models.items():
+    estimators.append(model)
+ensemble = EnsembleModel(estimators=estimators, final_estimator=LinearRegression())
+# Fit the ensemble
 ensemble.fit(features, labels)
 models["ensemble"] = ensemble
 # Save the model
 with open("models/ensemble.pkl", "wb") as f:
     pickle.dump(ensemble, f)
     print("saved")
-
-# Compare the models again
-compare_models()
+# Compare the models on a holdout set
+results, names = list(), list()
+for name, model in models.items():
+    pred = model.predict(test_features)
+    scores = np.subtract(test_labels.to_numpy().ravel(), pred)
+    results.append(scores)
+    names.append(name)
+    print(">%s %.3f (%.3f)" % (name, np.mean(scores), np.std(scores)))
+plt.boxplot(results, labels=names, showmeans=True)
+plt.show()
 
 # # Do the final test on the test set
 # predictions = ensemble.predict(final_test_features)
