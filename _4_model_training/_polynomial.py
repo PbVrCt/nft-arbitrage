@@ -21,21 +21,11 @@ combo_scores = eval(combo_scores)
 # Load the data
 features = pd.read_csv(".\data\\set_train_val_features.csv", index_col=[0])
 labels = pd.read_csv(".\data\\set_train_val_labels.csv", index_col=[0])
-test_features = pd.read_csv(".\data\\set_holdout1_features.csv", index_col=[0])
-test_labels = pd.read_csv(".\data\\set_holdout1_labels.csv", index_col=[0])
-# Use PreprocessingFnn to engineer feature set n. Returns a numpy array
-features = PreprocessingFn1(combo_scores, scaler=scaler, encoder=ohe).transform(
-    features
-)
-test_features = PreprocessingFn1(combo_scores, scaler=scaler, encoder=ohe).transform(
-    test_features
-)
-labels = labels.to_numpy().ravel()
-test_labels = test_labels.to_numpy().ravel()
 
 # Define the model and hyperpameters
 model = pipeline.Pipeline(
     steps=[
+        ("featr eng", PreprocessingFn1(combo_scores, ohe, scaler)),
         ("poly", preprocessing.PolynomialFeatures(include_bias=False, order="C")),
         ("model", linear_model.LinearRegression()),
     ]
@@ -63,7 +53,7 @@ gs = model_selection.GridSearchCV(
     verbose=1,
 )
 # Hyperparameter tuning
-gs.fit(features, labels)
+gs.fit(features, labels.to_numpy().ravel())
 # Print results
 print("\nBest score: {} with params: {} ".format(gs.best_score_, gs.best_params_))
 print("\nBest 5 fits:")
@@ -76,7 +66,7 @@ for mean, stdev, param in zip(means, stds, params):
 # Build the model with the optimal hyperparameters
 best_hps = gs.best_params_
 best_model = gs.best_estimator_
-best_model.fit(features, labels)
+best_model.fit(features, labels.to_numpy().ravel())
 
 # Save the model
 with open("models/_polynomial.pkl", "wb") as f:

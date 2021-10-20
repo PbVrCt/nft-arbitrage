@@ -41,13 +41,11 @@ class NewR(Resource):
             ],
         ]
         df = df.drop(["Image", "PriceBy100", "PriceUSD"], axis=1)
-        # Model serving
-
+        # Model serving. The model is actually a pipeline that does the feature engineering first and then the actual predict
         # start = time.time()
         price_predictions = pd.Series(model.predict(df)).rename("Prediction")
         # end = time.time()
         # print("Time elapsed in doing predictions: ", end - start, "s")
-
         # Output back to Go
         df = pd.concat(
             [

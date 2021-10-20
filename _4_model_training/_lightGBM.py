@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn import metrics
 from sklearn import model_selection
+from sklearn import pipeline
 import lightgbm as lgb
 from scipy.stats import randint as sp_randint
 from scipy.stats import uniform as sp_uniform
@@ -23,21 +24,8 @@ combo_scores = eval(combo_scores)
 # Load the data
 features = pd.read_csv(".\data\\set_train_val_features.csv", index_col=[0])
 labels = pd.read_csv(".\data\\set_train_val_labels.csv", index_col=[0])
-test_features = pd.read_csv(".\data\\set_holdout1_features.csv", index_col=[0])
-test_labels = pd.read_csv(".\data\\set_holdout1_labels.csv", index_col=[0])
-# Get the list of features to show feature_importances later
-feature_list = PreprocessingFn2(combo_scores, scaler=scaler, encoder=ohe).feature_list(
-    features
-)
-# Use PreprocessingFnn to engineer feature set n. Returns a numpy array
-features = PreprocessingFn2(combo_scores, scaler=scaler, encoder=ohe).transform(
-    features
-)
-test_features = PreprocessingFn2(combo_scores, scaler=scaler, encoder=ohe).transform(
-    test_features
-)
-labels = labels.to_numpy().ravel()
-test_labels = test_labels.to_numpy().ravel()
+
+# Define model and hyperparam search
 
 
 def learning_rate_010_decay_power_099(current_iter):
@@ -59,32 +47,41 @@ def learning_rate_005_decay_power_099(current_iter):
 
 
 fit_params = {
-    "early_stopping_rounds": 20,
-    "eval_metric": "mse",
-    "eval_set": [(features, labels)],
-    "eval_names": ["Train set"],
-    "verbose": False,
-    "categorical_feature": "auto",
+    # "model__early_stopping_rounds": 20, # No easy interplay between 'cv' from lightgbm's sklearn api and this param
+    # "model__eval_metric": "mse",
+    # "model__eval_set": [(_, _)], # To avoid information leakeage ideally this would not be the validaton fold from k-fold cv
+    # "model__eval_names": ["Eval set"],
+    "model__verbose": False,
+    "model__categorical_feature": "auto",
 }
 param_test = {
-    "n_estimators": sp_randint(20, 200),
-    "max_depth": sp_randint(10, 30),
-    "num_leaves": sp_randint(6, 50),
-    "min_child_samples": sp_randint(100, 500),
-    "min_child_weight": [1e-5, 1e-3, 1e-2, 1e-1, 1, 1e1, 1e2, 1e3, 1e4],
-    "subsample": sp_uniform(loc=0.2, scale=0.8),
-    "colsample_bytree": sp_uniform(loc=0.4, scale=0.6),
-    # "reg_alpha": [0, 1e-1, 1, 2, 5, 7, 10, 50, 100],
-    # "reg_lambda": [0, 1e-1, 1, 5, 10, 20, 50, 100],
+    "model__n_estimators": sp_randint(20, 200),
+    "model__max_depth": sp_randint(10, 30),
+    "model__num_leaves": sp_randint(6, 50),
+    "model__min_child_samples": sp_randint(100, 500),
+    "model__min_child_weight": [1e-5, 1e-3, 1e-2, 1e-1, 1, 1e1, 1e2, 1e3, 1e4],
+    "model__subsample": sp_uniform(loc=0.2, scale=0.8),
+    "model__colsample_bytree": sp_uniform(loc=0.4, scale=0.6),
+    # "model__reg_alpha": [0, 1e-1, 1, 2, 5, 7, 10, 50, 100],
+    # "model__reg_lambda": [0, 1e-1, 1, 5, 10, 20, 50, 100],
 }
-clf = lgb.LGBMRegressor(
-    max_depth=-1,
-    random_state=314,
-    silent=True,
-    metric="mse",
-    n_jobs=1,
-    # n_estimators=50,
-    # force_col_wise=True,
+
+model = pipeline.Pipeline(
+    steps=[
+        ("featr eng", PreprocessingFn2(combo_scores, ohe, scaler)),
+        (
+            "model",
+            lgb.LGBMRegressor(
+                max_depth=-1,
+                random_state=314,
+                silent=True,
+                metric="mse",
+                n_jobs=1,
+                # n_estimators=50,
+                # force_col_wise=True,
+            ),
+        ),
+    ]
 )
 
 
@@ -95,9 +92,9 @@ def mse_scorer(*args):
 
 
 gs = model_selection.RandomizedSearchCV(
-    estimator=clf,
+    estimator=model,
     param_distributions=param_test,
-    n_iter=30,
+    n_iter=35,
     scoring=metrics.make_scorer(mse_scorer, greater_is_better=False),
     cv=model_selection.RepeatedKFold(n_splits=7, n_repeats=1, random_state=1),
     refit=True,
@@ -105,11 +102,16 @@ gs = model_selection.RandomizedSearchCV(
     n_jobs=1,
     verbose=1,
 )
+
+# Train the model
+
 gs.fit(
     features,
-    labels,
+    labels.to_numpy().ravel(),
     **fit_params,
-    callbacks=[lgb.reset_parameter(learning_rate=learning_rate_010_decay_power_099)]
+    model__callbacks=[
+        lgb.reset_parameter(learning_rate=learning_rate_010_decay_power_099)
+    ]
 )
 # Print results
 print("\nBest score: {} with params: {} ".format(gs.best_score_, gs.best_params_))
@@ -124,16 +126,13 @@ for mean, stdev, param in zip(means, stds, params):
 best_hps = gs.best_params_
 best_model = gs.best_estimator_
 
-# Refit the best model with higher lr decay
-best_model = lgb.LGBMRegressor(**gs.best_estimator_.get_params())
-best_model.fit(
-    features,
-    labels,
-    **fit_params,
-    callbacks=[lgb.reset_parameter(learning_rate=learning_rate_010_decay_power_0995)]
-)
 # Feature importances
-feat_imp = pd.Series(best_model.feature_importances_, index=feature_list)
+feature_list = PreprocessingFn2(combo_scores, scaler=scaler, encoder=ohe).feature_list(
+    features
+)
+feat_imp = pd.Series(
+    best_model.named_steps["model"].feature_importances_, index=feature_list
+)
 feat_imp.nlargest(20).plot(kind="barh", figsize=(10, 6))
 plt.tight_layout()
 plt.draw()

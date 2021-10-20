@@ -156,10 +156,10 @@ class PreprocessingFn1:
         fit_save_scaler(df, ["card_score"], "feature_set_1")
         return self
 
-    def fit(self, df):
+    def fit(self, df, labels):
         return self
 
-    def fit_transform(self, df):
+    def fit_transform(self, df, labels):
         return self.transform(df)
 
     def feature_list(self, df):
@@ -171,8 +171,10 @@ class PreprocessingFn1:
     def preprocessing(self, df):
         df = df.copy()
         # Feature engineering
-        df.loc[:, "multiplier_score"] = df.apply(assign_multiplier_score, axis=1)
-        df.loc[:, "card_score"] = df.apply(assign_card_score, axis=1)
+        df.loc[:, "multiplier_score"] = df.apply(
+            lambda df: assign_multiplier_score(df), axis=1
+        )
+        df.loc[:, "card_score"] = df.apply(lambda df: assign_card_score(df), axis=1)
 
         df = engineer_combos(df)
         df.loc[:, "combo_score"] = df.apply(
@@ -214,10 +216,10 @@ class PreprocessingFn2:
         fit_save_scaler(df, ["card_score"], "feature_set_2")
         return self
 
-    def fit(self, df):
+    def fit(self, df, labels):
         return self
 
-    def fit_transform(self, df):
+    def fit_transform(self, df, labels):
         return self.transform(df)
 
     def feature_list(self, df):
@@ -275,10 +277,10 @@ class PreprocessingFn3:
         fit_save_scaler(df, ["Hp", "Sp", "Sk", "Mr", "card_score"], "feature_set_3")
         return self
 
-    def fit(self, df):
+    def fit(self, df, labels):
         return self
 
-    def fit_transform(self, df):
+    def fit_transform(self, df, labels):
         return self.transform(df)
 
     def feature_list(self, df):
@@ -290,8 +292,10 @@ class PreprocessingFn3:
     def preprocessing(self, df):
         df = df.copy()
         # Feature engineering
-        df.loc[:, "multiplier_score"] = df.apply(assign_multiplier_score, axis=1)
-        df.loc[:, "card_score"] = df.apply(assign_card_score, axis=1)
+        df.loc[:, "multiplier_score"] = df.apply(
+            lambda df: assign_multiplier_score(df), axis=1
+        )
+        df.loc[:, "card_score"] = df.apply(lambda df: assign_card_score(df), axis=1)
         df = engineer_combos(df)
         df.loc[:, "combo_score"] = df.apply(
             lambda df: assign_combo_score(df, self.__scores, combos), axis=1

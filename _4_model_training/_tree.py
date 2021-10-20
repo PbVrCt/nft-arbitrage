@@ -23,22 +23,6 @@ combo_scores = eval(combo_scores)
 # Load the data
 features = pd.read_csv(".\data\\set_train_val_features.csv", index_col=[0])
 labels = pd.read_csv(".\data\\set_train_val_labels.csv", index_col=[0])
-test_features = pd.read_csv(".\data\\set_holdout1_features.csv", index_col=[0])
-test_labels = pd.read_csv(".\data\\set_holdout1_labels.csv", index_col=[0])
-# Get the list of features to show feature_importances later
-feature_list = PreprocessingFn1(combo_scores, scaler=scaler, encoder=ohe).feature_list(
-    features
-)
-# Use PreprocessingFnn to engineer feature set n. Returns a numpy array
-features = PreprocessingFn1(combo_scores, scaler=scaler, encoder=ohe).transform(
-    features
-)
-test_features = PreprocessingFn1(combo_scores, scaler=scaler, encoder=ohe).transform(
-    test_features
-)
-labels = labels.to_numpy().ravel()
-test_labels = test_labels.to_numpy().ravel()
-
 # Define the model: Random Forest
 class RF(kt.HyperModel):
     def build(self, hp):
@@ -51,13 +35,22 @@ class RF(kt.HyperModel):
             "min_weight_fraction_leaf", min_value=0.1, max_value=0.5
         )
         ccp_alpha = hp.Float("ccp_alpha", min_value=0.01, max_value=4)
-        model = tree.DecisionTreeRegressor(
-            splitter=splitter,
-            max_depth=max_depth,
-            min_samples_leaf=min_samples_leaf,
-            min_weight_fraction_leaf=min_weight_fraction_leaf,
-            max_features=max_features,
-            max_leaf_nodes=max_leaf_nodes,
+
+        model = pipeline.Pipeline(
+            steps=[
+                ("featr eng", PreprocessingFn1(combo_scores, ohe, scaler)),
+                (
+                    "model",
+                    tree.DecisionTreeRegressor(
+                        splitter=splitter,
+                        max_depth=max_depth,
+                        min_samples_leaf=min_samples_leaf,
+                        min_weight_fraction_leaf=min_weight_fraction_leaf,
+                        max_features=max_features,
+                        max_leaf_nodes=max_leaf_nodes,
+                    ),
+                ),
+            ]
         )
         return model
 
@@ -78,16 +71,21 @@ tuner = kt.tuners.SklearnTuner(
     project_name="Keras_tuner_metadata/tree",
     overwrite=True,
 )
-tuner.search(features, labels)
+tuner.search(features, labels.to_numpy().ravel())
 # Show the results
 tuner.results_summary(num_trials=3)
 # Build the model with the optimal hyperparameters
 best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 best_model = tuner.hypermodel.build(best_hps)
-best_model.fit(features, labels)
+best_model.fit(features, labels.to_numpy().ravel())
 
 # Feature importances
-feat_imp = pd.Series(best_model.feature_importances_, index=feature_list)
+feature_list = PreprocessingFn1(combo_scores, scaler=scaler, encoder=ohe).feature_list(
+    features
+)
+feat_imp = pd.Series(
+    best_model.named_steps["model"].feature_importances_, index=feature_list
+)
 feat_imp.nlargest(20).plot(kind="barh", figsize=(10, 6))
 plt.tight_layout()
 plt.draw()

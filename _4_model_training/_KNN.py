@@ -20,19 +20,14 @@ combo_scores = eval(combo_scores)
 # Load the data
 features = pd.read_csv(".\data\\set_train_val_features.csv", index_col=[0])
 labels = pd.read_csv(".\data\\set_train_val_labels.csv", index_col=[0])
-test_features = pd.read_csv(".\data\\set_holdout1_features.csv", index_col=[0])
-test_labels = pd.read_csv(".\data\\set_holdout1_labels.csv", index_col=[0])
-# Use PreprocessingFnn to engineer feature set n. Returns a numpy array
-features = PreprocessingFn1(combo_scores, scaler=scaler, encoder=ohe).transform(
-    features
-)
-test_features = PreprocessingFn1(combo_scores, scaler=scaler, encoder=ohe).transform(
-    test_features
-)
-labels = labels.to_numpy().ravel()
-test_labels = test_labels.to_numpy().ravel()
 # Define the model and hyperpameters
-model = neighbors.KNeighborsRegressor()
+model = pipeline.Pipeline(
+    steps=[
+        ("featr eng", PreprocessingFn1(combo_scores, ohe, scaler)),
+        ("model", neighbors.KNeighborsRegressor()),
+    ]
+)
+
 n_neighbors = range(5, 15, 5)
 leaf_size = range(20, 40, 10)
 weights = ["uniform", "distance"]
@@ -41,12 +36,12 @@ metric = ["euclidean"]  # , "manhattan", "minkowski"]
 p = [1, 2]
 # Define the search space
 grid = dict(
-    n_neighbors=n_neighbors,
-    weights=weights,
-    metric=metric,
-    p=p,
-    leaf_size=leaf_size,
-    algorithm=algorithm,
+    model__n_neighbors=n_neighbors,
+    model__weights=weights,
+    model__metric=metric,
+    model__p=p,
+    model__leaf_size=leaf_size,
+    model__algorithm=algorithm,
 )
 cv = model_selection.RepeatedKFold(n_splits=5, n_repeats=1, random_state=1)
 
@@ -66,7 +61,7 @@ gs = model_selection.GridSearchCV(
     verbose=2,
 )
 # Hyperparameter tuning
-gs.fit(features, labels)
+gs.fit(features, labels.to_numpy().ravel())
 # Print results
 print("\nBest score: {} with params: {} ".format(gs.best_score_, gs.best_params_))
 print("\nBest 5 fits:")
@@ -78,7 +73,7 @@ for mean, stdev, param in zip(means, stds, params):
 # Get the model with the optimal hyperparameters
 best_hps = gs.best_params_
 best_model = gs.best_estimator_
-best_model.fit(features, labels)
+best_model.fit(features, labels.to_numpy().ravel())
 # Save the model
 with open("models/_KNN.pkl", "wb") as f:
     pickle.dump(best_model, f)

@@ -24,19 +24,7 @@ features = pd.read_csv(".\data\\set_train_val_features.csv", index_col=[0])
 labels = pd.read_csv(".\data\\set_train_val_labels.csv", index_col=[0])
 test_features = pd.read_csv(".\data\\set_holdout1_features.csv", index_col=[0])
 test_labels = pd.read_csv(".\data\\set_holdout1_labels.csv", index_col=[0])
-# Get the list of features to show feature_importances later
-feature_list = PreprocessingFn3(combo_scores, scaler=scaler, encoder=ohe).feature_list(
-    features
-)
-# Use PreprocessingFnn to engineer feature set n. Returns a numpy array
-features = PreprocessingFn3(combo_scores, scaler=scaler, encoder=ohe).transform(
-    features
-)
-test_features = PreprocessingFn3(combo_scores, scaler=scaler, encoder=ohe).transform(
-    test_features
-)
-labels = labels.to_numpy().ravel()
-test_labels = test_labels.to_numpy().ravel()
+
 # Define the model: Gradient Boosting Machine
 class GBM(kt.HyperModel):
     def build(self, hp):
@@ -51,16 +39,23 @@ class GBM(kt.HyperModel):
         #     "loss",
         #     ["squared_error", "ls", "absolute_error", "lad", "huber", "quantile"],
         # )
-
-        model = ensemble.GradientBoostingRegressor(
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            subsample=subsample,
-            max_features=max_features,
-            learning_rate=learning_rate,
-            criterion=criterion,
-            # loss=loss,
-            verbose=2,
+        model = pipeline.Pipeline(
+            steps=[
+                ("featr eng", PreprocessingFn3(combo_scores, ohe, scaler)),
+                (
+                    "model",
+                    ensemble.GradientBoostingRegressor(
+                        n_estimators=n_estimators,
+                        max_depth=max_depth,
+                        subsample=subsample,
+                        max_features=max_features,
+                        learning_rate=learning_rate,
+                        criterion=criterion,
+                        # loss=loss,
+                        verbose=2,
+                    ),
+                ),
+            ]
         )
         return model
 
@@ -81,16 +76,21 @@ tuner = kt.tuners.SklearnTuner(
     project_name="Keras_tuner_metadata/GBM",
     overwrite=True,
 )
-tuner.search(features, labels)
+tuner.search(features, labels.to_numpy().ravel())
 # Show the results
 tuner.results_summary(num_trials=3)
 # Build the model with the optimal hyperparameters
 best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 best_model = tuner.hypermodel.build(best_hps)
-best_model.fit(features, labels)
+best_model.fit(features, labels.to_numpy().ravel())
 
 # Feature importances
-feat_imp = pd.Series(best_model.feature_importances_, index=feature_list)
+feature_list = PreprocessingFn3(combo_scores, scaler=scaler, encoder=ohe).feature_list(
+    features
+)
+feat_imp = pd.Series(
+    best_model.named_steps["model"].feature_importances_, index=feature_list
+)
 feat_imp.nlargest(20).plot(kind="barh", figsize=(10, 6))
 plt.tight_layout()
 # plt.draw()

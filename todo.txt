@@ -1,6 +1,5 @@
-Finish the stacked ensemble:
-    See if possible to train the base models in a sklearn pipeline that starts by implementing their corresponding feature sets
-    in order to remove boilerplate from ensemble.py
+Fiddle with the ensemble. Employ different models for different subsets of the data.
+Explore kaggle a bit more
 
 # Track revenue by scraping the blockchain explorer with a web scraping tool like Selenium/PlayWright or Colly for Go
 # Get data tests to run on the cloud ? In that case connect great expectations to s3 buckets
