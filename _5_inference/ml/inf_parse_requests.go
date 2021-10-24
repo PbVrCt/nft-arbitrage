@@ -120,9 +120,9 @@ type Criteria struct {
 }
 
 // DO REQUESTS
-func PostRequest(body interface{}, client *http.Client) ([]byte, error) {
+func PostRequest(body interface{}, client *http.Client, url string) ([]byte, error) {
 	b, _ := json.Marshal(body)
-	request, _ := http.NewRequest("POST", URL, bytes.NewBuffer(b))
+	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(b))
 
 	request.Header.Set("Content-Type", "application/json")
 	parseFormErr := request.ParseForm()

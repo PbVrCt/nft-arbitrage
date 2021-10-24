@@ -22,9 +22,9 @@ var bargains sync.Map
 var external_api_client = &http.Client{Timeout: time.Second * 10}
 var python_api_client = &http.Client{Timeout: time.Second * 10}
 
-// var prx_url, _ = url.Parse(PRX)
-// var transport = &http.Transport{Proxy: http.ProxyURL(prx_url), TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
-// var external_api_proxy_client = &http.Client{Transport: transport, Timeout: time.Second * 10}
+// To call through a proxy, in PostRequest's arguments, substitute the URL argument for the URL_PROXY below.
+// The URL_PROXY variable has to be defined inside main so that the PRX_KEY environment variable is loaded first
+// var URL_PROXY = fmt.Sprintf("https://api.scraperapi.com?api_key=%s&url=%s", PRX_KEY, URL)
 
 func main() {
 	LoadEnv()
@@ -56,7 +56,7 @@ func predict_on_batches() {
 
 // 2 step filer: 1) price vs ML price prediction 2) price vs market prices
 func notify_if_cheap(nft AxieInfoEngineered) {
-	if _, ok := bargains.Load(nft.Id); !ok && (nft.Prediction*0.01) > (nft.PriceBy100*0.01)*2.5 && nft.PriceUSD > 50 {
+	if _, ok := bargains.Load(nft.Id); !ok && (nft.Prediction*0.01) > (nft.PriceBy100*0.01)*2.0 && nft.PriceUSD > 50 {
 		bargains.Store(nft.Id, true)
 		start := time.Now()
 		var prices_ch = make(chan []float64)
@@ -79,6 +79,8 @@ func notify_if_cheap(nft AxieInfoEngineered) {
 			if price_history.Prices[0] > (nft.PriceBy100*0.01) && price_history.Timestamps[0].After(last_sale_timecutoff) {
 				go notify_discord(nft, current_prices, price_history)
 			}
+		default: // TODO: Debug what the price_history is in this case and if notify_discord works properly or throws a http 400 Bad Request error
+			go notify_discord(nft, current_prices, price_history)
 		}
 	}
 }
@@ -133,7 +135,7 @@ func get_data(query string, pages_to_scan int) {
 // Gets data from a single post request to the external API
 func get_data_batch(page int, query string) {
 	var body RequestBody = CreateBody(page*100, query)
-	data, err := PostRequest(&body, external_api_client)
+	data, err := PostRequest(&body, external_api_client, URL)
 	if err != nil {
 		return
 	}
