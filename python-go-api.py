@@ -11,7 +11,7 @@ from flask_restful import Resource, Api, abort
 from _3_preprocessing.preprocessing_fns import features_to_show
 
 # Model
-with open("./models/ensemble.pkl", "rb") as f:
+with open("./models/ensemble.pkl", "rb") as f:  # ensemble, _GBM
     model = pickle.load(f)
 # Api
 app = Flask(__name__, static_url_path="", static_folder="dist")

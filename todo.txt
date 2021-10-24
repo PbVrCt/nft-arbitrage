@@ -1,16 +1,17 @@
-Fiddle with the ensemble. Employ different models for different subsets of the data.
-Explore kaggle a bit more
+Write a readme file
+Resume the project when the chainlink hackathon is finished?
 
-# Track revenue by scraping the blockchain explorer with a web scraping tool like Selenium/PlayWright or Colly for Go
-# Get data tests to run on the cloud ? In that case connect great expectations to s3 buckets
-# Move the training to sagemaker?
-# Move the inference to kinesis? In that case check the record weights in kinesis
-# Try Pytorch? Tensorflow's model.predict is too slow for the inference
-# Build database with auction prices?
+Pull revenue data from the dex and send revenue notifications to the discord server
+Use a logging system to track model updates -> Include model updates info in the revenue tracker
+Update/revert the model automatically when revenue decreases. Try do it with Airflow.
+Explore how Github Actions can help
+
+Get data tests to run on the cloud ? -> Connect great expectations to s3 buckets
+Move the training to sagemaker? Move the inference to kinesis?
+Build database with auction prices?
 
 
-
-# Project timeline (6 weeks):
+# Project timeline (6 weeks) - Currently paused
 
 # Exploring data collection and data
 # Getting Mininum Viable Product
