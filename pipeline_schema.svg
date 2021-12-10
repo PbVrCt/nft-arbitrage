@@ -25,9 +25,9 @@
      inkscape:document-units="mm"
      showgrid="false"
      width="380mm"
-     inkscape:zoom="0.3867759"
-     inkscape:cx="970.84643"
-     inkscape:cy="573.97578"
+     inkscape:zoom="0.53807938"
+     inkscape:cx="733.1632"
+     inkscape:cy="486.917"
      inkscape:window-width="1368"
      inkscape:window-height="842"
      inkscape:window-x="-6"
@@ -743,6 +743,44 @@
        width="226.69778"
        height="53.018032"
        id="rect95771-1-6-6" />
+    <clipPath
+       id="clip0-61">
+      <rect
+         x="1421"
+         y="249"
+         width="481"
+         height="266"
+         id="rect279" />
+    </clipPath>
+    <clipPath
+       id="clip1-4">
+      <rect
+         x="-0.5"
+         y="-0.5"
+         width="766762"
+         height="766762"
+         id="rect282" />
+    </clipPath>
+    <image
+       width="160"
+       height="160"
+       xlink:href="data:image/jpeg;base64,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"
+       preserveAspectRatio="none"
+       id="img2-0" />
+    <clipPath
+       id="clip3-4">
+      <path
+         d="M0.0813599 0.00868988 762000 0.00868988 762000 762000 0.0625 762000Z"
+         fill-rule="evenodd"
+         clip-rule="evenodd"
+         id="path286" />
+    </clipPath>
+    <rect
+       x="279.71582"
+       y="630.73175"
+       width="128.1993"
+       height="67.885727"
+       id="rect95771-1-6-3" />
   </defs>
   <g
      inkscape:label="Layer 1"
@@ -762,12 +800,12 @@
        sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
-       transform="matrix(0.26458333,0,0,0.26458333,49.405072,-42.166054)"
+       transform="matrix(0.26458333,0,0,0.26458333,60.531381,-42.166054)"
        id="text26243"
        style="font-style:normal;font-weight:normal;font-size:32px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect26245);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="47.533203"
          y="212.01488"
-         id="tspan18672">NFT MARKETPLACE API</tspan></text>
+         id="tspan16860">NFT MARKETPLACE API</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:6, 1;stroke-dashoffset:0;stroke-opacity:0.2"
        d="M 7.7323007,109.47808 C 133.50115,109.4113 259.26974,109.34451 385.03806,109.27773"
@@ -1064,46 +1102,9 @@
          transform="translate(0,4)" />
     </g>
     <g
-       clip-path="url(#clip0-8)"
-       transform="matrix(0.13229167,0,0,0.13229167,39.831186,35.954756)"
-       id="g55866"
-       inkscape:transform-center-x="14.027674"
-       inkscape:transform-center-y="-0.48370106">
-      <g
-         clip-path="url(#clip1-0)"
-         transform="matrix(2.09974e-4,0,0,2.09974e-4,627,248)"
-         id="g55864">
-        <g
-           clip-path="url(#clip3)"
-           id="g55862">
-          <use
-             width="100%"
-             height="100%"
-             xlink:href="#img2"
-             transform="matrix(4762.5,0,0,4762.5,0.0813599,0)"
-             id="use55860"
-             x="0"
-             y="0" />
-        </g>
-      </g>
-    </g>
-    <g
        clip-path="url(#clip0-4)"
        transform="matrix(0.26458333,0,0,0.26458333,-68.727431,-28.992984)"
        id="g55892">
-      <text
-         font-family="Arial, Arial_MSFontService, sans-serif"
-         font-weight="400"
-         font-size="32px"
-         id="text55890"
-         x="689.552"
-         y="427.66983"
-         style="font-size:16px"><tspan
-           font-size="32px"
-           x="718.04529"
-           y="466.66983"
-           id="tspan55888"
-           style="font-size:16px">Amazon EC2</tspan></text>
       <text
          font-family="Arial, Arial_MSFontService, sans-serif"
          font-weight="400"
@@ -1142,7 +1143,7 @@
     </g>
     <g
        clip-path="url(#clip0-72)"
-       transform="matrix(0.26458333,0,0,0.26458333,138.28773,-15.509348)"
+       transform="matrix(0.26458333,0,0,0.26458333,137.55015,-16.984502)"
        id="g55947">
       <text
          font-family="Arial, Arial_MSFontService, sans-serif"
@@ -1385,7 +1386,7 @@
        style="font-style:normal;font-weight:normal;font-size:26.6667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect95771);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="279.71484"
          y="655.06126"
-         id="tspan18674">ML Model</tspan></text>
+         id="tspan16862">ML Model</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.2;marker-end:url(#marker102484)"
        d="m 200.80735,81.18085 c 30.95792,0 61.91557,0 92.87296,0"
@@ -1394,10 +1395,10 @@
        inkscape:original-d="m 200.80735,81.18085 c 30.95792,2.64e-4 61.91557,2.64e-4 92.87296,0" />
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.2;marker-end:url(#Arrow1Mend)"
-       d="m 160.132,24.709655 c -0.0515,12.170765 -0.10309,24.341314 -0.1316,31.067935 -0.0285,6.72662 -0.034,8.009528 -0.0394,9.292431"
+       d="m 168.47673,24.014261 c -0.0515,12.170765 -0.10309,24.341314 -0.1316,31.067935 -0.0285,6.72662 -0.034,8.009528 -0.0394,9.292431"
        id="path103032"
        inkscape:path-effect="#path-effect103034"
-       inkscape:original-d="m 160.132,24.709655 c -0.0513,12.170766 -0.10287,24.341315 -0.15464,36.511649 -0.005,1.282908 -0.0107,2.565815 -0.0164,3.848717"
+       inkscape:original-d="m 168.47673,24.014261 c -0.0513,12.170766 -0.10287,24.341315 -0.15464,36.511649 -0.005,1.282908 -0.0107,2.565815 -0.0164,3.848717"
        sodipodi:nodetypes="ccc" />
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.2;marker-end:url(#Arrow1Mend-3)"
@@ -1455,7 +1456,7 @@
        style="font-style:normal;font-weight:normal;font-size:26.6667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect95771-1);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="279.71484"
          y="655.06126"
-         id="tspan18676">Buy calls</tspan></text>
+         id="tspan16864">Buy calls</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,-51.267175,-39.321413)"
@@ -1463,15 +1464,62 @@
        style="font-style:normal;font-weight:normal;font-size:26.6667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect95771-1-6);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="279.71484"
          y="655.06126"
-         id="tspan18678">Real time data</tspan></text>
+         id="tspan16866">Real time data</tspan></text>
     <text
        xml:space="preserve"
-       transform="matrix(0.26458333,0,0,0.26458333,92.476442,-127.64091)"
+       transform="matrix(0.26458333,0,0,0.26458333,98.734994,-127.64091)"
        id="text95769-0-4-9"
        style="font-style:normal;font-weight:normal;font-size:26.6667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect95771-1-6-6);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="279.71484"
          y="655.06126"
-         id="tspan18680">Data</tspan></text>
+         id="tspan16868">Data</tspan></text>
+    <g
+       clip-path="url(#clip0-61)"
+       transform="matrix(0.238125,0,0,0.238125,-261.1022,-0.91439754)"
+       id="g301">
+      <g
+         clip-path="url(#clip1-4)"
+         transform="matrix(1.0643162e-4,0,0,1.0643162e-4,1622.635,296.86833)"
+         id="g295">
+        <g
+           clip-path="url(#clip3-4)"
+           id="g293">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img2-0"
+             transform="matrix(4762.5,0,0,4762.5,0.0813599,0.00868988)"
+             id="use291"
+             x="0"
+             y="0" />
+        </g>
+      </g>
+      <text
+         font-family="Arial, Arial_MSFontService, sans-serif"
+         font-weight="400"
+         font-size="16.2202px"
+         id="text299"
+         x="1606.1072"
+         y="375.31015"
+         style="stroke-width:0.50688"><tspan
+           font-size="16.2202px"
+           x="1615.9069"
+           y="395.07843"
+           id="tspan297"
+           style="stroke-width:0.202752">Amazon ECS</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,39.848296,-7.9327301)"
+       id="text95769-0-4-7"
+       style="font-style:normal;font-weight:normal;font-size:26.6667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect95771-1-6-3);fill:#000000;fill-opacity:1;stroke:none"><tspan
+         x="279.71484"
+         y="655.06126"
+         id="tspan16870">Price
+</tspan><tspan
+         x="279.71484"
+         y="688.39464"
+         id="tspan16872">forecasts</tspan></text>
   </g>
   <style
      type="text/css"
