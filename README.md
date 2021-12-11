@@ -47,7 +47,7 @@ However, for my simple usecase, since I already had some experience with REST an
 
 By the 6th week I was considering looking into Apache Airflow. I know that it is one of the most consolidated tech choices for Extract-Load-Transform (ETL) pipelines for data engineers right now, and so my idea was to find out whether I could use a DAG to automatize the model training part and maybe monitorize model performance based on earnings and retrain the model based on that.
 I also considered throwing in an experiment tracking tool like MLFlow or Weights&Biases, to track different models as the market evolves, and maybe more importantly to track the data and do dataset versioning.
-However last in the last 2 months I´ve been involved in blockchain hackathons and also began interviewing for jobs so I´ve paused this side project indefinetly. It was fun and served its purpose, to learn by doing.
+However for the last 2 months I´ve been involved in blockchain hackathons and also began interviewing for jobs so I´ve paused this side project indefinetly. It was fun and served its purpose, to learn by doing.
 
 # A bit about the nfts, how I got into this project, and additional difficulties
 
