@@ -1,5 +1,5 @@
 # What it is
-It is a pipleine to to predict the price of nfts going on sale on the Ax1e 1nfinity marketplace. A ML model forescasts the nft price as soon as it is listed and sends a buy notification to Discord if the forecasted price is significantly above the price that it is being listed at. The idea is to flip the nfts in a short time frame, that is, buy them and sell for more in minutes/hours.
+It is a pipleine to predict the price of nfts going on sale on the Ax1e 1nfinity marketplace. A ML model forescasts the nft price as soon as it is listed and sends a buy notification to Discord if the forecasted price is significantly above the price that it is being listed at. The idea is to flip the nfts in a short time frame, that is, buy them and sell for more in minutes/hours.
 
 # How it works, tech choices, difficulties
 image:
